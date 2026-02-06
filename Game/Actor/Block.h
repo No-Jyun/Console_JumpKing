@@ -4,6 +4,7 @@
 
 using namespace Wanted;
 
+// 맵 경계 타일 액터 클래스
 class Block : public Actor
 {
 	// RTTI 선언

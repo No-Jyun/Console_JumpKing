@@ -2,11 +2,16 @@
 
 #include "Actor/Actor.h"
 #include "Util/Timer.h"
+#include "Level/JumpLevel.h"
 
 using namespace Wanted;
 
+// 유저가 플레이하는 플레이어 액터 클래스
 class Player : public Actor
 {
+	// 레벨에서 플레이어의 데이터를 로드하기 위해 friend 사용
+	friend JumpLevel;
+
 	// 플레이어 상태
 	enum class PlayerState
 	{
@@ -33,7 +38,7 @@ public:
 
 	// 충돌 여부 확인 함수, 충돌하는 경우가 플레이어와 다른 액터뿐이므로 
 	// 플레이어의 함수로 이동
-	const Vector2 TestIntersect(const Actor* const other);
+	const Vector2 TestIntersect(Actor& const other);
 
 	// 추락 판단을 위해 플레이어 아래의 블럭여부를 업데이트하는 함수
 	void UpdateIsLanding(bool isLanding);

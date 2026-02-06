@@ -39,6 +39,7 @@ struct MenuItem
 
 using namespace Wanted;
 
+// 일시정지 메뉴를 보여주는 레벨 클래스
 class PauseMenuLevel : public Level
 {
 	RTTI_DECLARATIONS(PauseMenuLevel, Level)

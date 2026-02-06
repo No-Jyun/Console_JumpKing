@@ -4,6 +4,7 @@
 
 using namespace Wanted;
 
+// 얼음(미끄러짐) 타일 액터 클래스
 class Ice : public Actor
 {
 	// RTTI 선언

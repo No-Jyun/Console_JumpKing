@@ -5,6 +5,7 @@
 #include "Level/Level.h"
 #include "Actor/PlayerDeadEffect.h"
 #include "Game/Game.h"
+#include "Actor/Goal.h"
 
 Player::Player(const Vector2& position)
 	: super("b", position, Color::Green), state(PlayerState::IdleR)
@@ -347,7 +348,7 @@ const int Player::GetJumpPower(const float chargedTime)
 	}
 }
 
-const Vector2 Player::TestIntersect(const Actor* const other)
+const Vector2 Player::TestIntersect(Actor& const other)
 {
 	// AABB (Axis Aligned Bounding Box)
 	// 물체의 특정 한 지점을 기준으로 끝단을 구함
@@ -366,12 +367,12 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 	float yMax = y + 1.0f;
 
 	// 충돌을 비교할 다른 액터의 x좌표 정보
-	float otherXMin = static_cast<float>(other->GetPosition().x);
-	float otherXMax = static_cast<float>(other->GetPosition().x + other->GetWidth());
+	float otherXMin = static_cast<float>(other.GetPosition().x);
+	float otherXMax = static_cast<float>(other.GetPosition().x + other.GetWidth());
 
 	// 충돌을 비교할 다른 액터의 y좌표 정보
-	float otherYMin = static_cast<float>(other->GetPosition().y);
-	float otherYMax = static_cast<float>(other->GetPosition().y + 1);
+	float otherYMin = static_cast<float>(other.GetPosition().y);
+	float otherYMax = static_cast<float>(other.GetPosition().y + 1);
 
 	// 안겹치는 조건 확인
 	// 다른 액터의 왼쪽 좌표가 내 오른쪽 좌표보다 더 오른쪽에 있는 경우

@@ -8,6 +8,7 @@
 #include "Util/Util.h"
 #include "Core/Input.h"
 #include "Game/Game.h"
+#include "Actor/Goal.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -27,10 +28,10 @@ static const char* stage[] =
 };
 
 JumpLevel::JumpLevel(const int stageIndex)
-	: playerSpawnPosition(Vector2::Zero)
+	: playerSpawnPosition(Vector2::Zero), currentStageNum(stageIndex)
 {
 	// stageIndex에 맞는 stage 로드
-	LoadMap(stage[stageIndex]);
+	LoadStage(stage[stageIndex]);
 
 	// 리스폰 타이머 설정
 	playerRespawnTimer.SetTargetTime(playerRepawnTime);
@@ -65,7 +66,7 @@ void JumpLevel::Tick(float deltaTime)
 			playerRespawnTimer.Reset();
 
 			// 플레이어 리스폰
-			AddNewActor(new Player(playerSpawnPosition));
+			RespawnPlayer();
 		}
 		return;
 	}
@@ -76,11 +77,20 @@ void JumpLevel::Tick(float deltaTime)
 	// 발판 확인 
 	CheckGround();
 
+	if (state == LevelState::NextLevel)
+	{
+		PlayerGotoNextStage();		
+	}
+	else if (state == LevelState::PreviousLevel)
+	{
+		// Todo: 이전 스테이지로 
+	}
+
 	// Draw 필요??
 	// 플레이어가 죽었을 경우 / 클리어 했을 경우
 }
 
-void JumpLevel::LoadMap(const char* filename)
+void JumpLevel::LoadStage(const char* filename)
 {
 	// 파일 로드
 	// 최종 파일 경로 만들기 ("../Assets/filename")
@@ -97,7 +107,7 @@ void JumpLevel::LoadMap(const char* filename)
 		// 오류 메시지 출력.
 		MessageBoxA(
 			nullptr,
-			"JumpLevel::LoadMap() - Failed to load map",
+			"JumpLevel::LoadStage() - Failed to load stage",
 			"Error",
 			MB_OK
 		);
@@ -186,13 +196,22 @@ void JumpLevel::LoadMap(const char* filename)
 			AddNewActor(new Spike(position, mapCharacter - '0'));
 			break;
 
+		case 'g':
+			// 목적지 타일 생성
+			Goal * goal = new Goal(position);
+			AddNewActor(goal);
+
+			// 배열에 저장
+			upwardGoal.emplace_back(goal);
+			break;
 
 		case 'p':
 			// 맵 로드시 플레이어 생성 위치 초기화
 			playerSpawnPosition = position;
 
 			// 플레이어 생성
-			AddNewActor(new Player(position));
+			player = new Player(position);
+			AddNewActor(player);
 			break;
 		}
 
@@ -207,6 +226,67 @@ void JumpLevel::LoadMap(const char* filename)
 	fclose(file);
 }
 
+void JumpLevel::PlayerGotoNextStage()
+{
+	// 현재 맵에 그려진거 지우기
+	// 메모리 정리
+	for (Actor*& actor : actors)
+	{
+		if (actor)
+		{
+			delete actor;
+			actor = nullptr;
+		}
+	}
+
+	// 배열 초기화
+	actors.clear();
+
+	//system("cls");
+
+	// 스테이지 변동
+	currentStageNum += static_cast<int>(state);
+
+	// 레벨 관련 변수 초기화
+	state = LevelState::None;
+	upwardGoal.clear();
+	downwardGoal.clear();
+	player = nullptr;
+
+	// 새로운 맵 로드
+	// Todo: 여기부터 시작
+	// 플레이어 생성 및 상태 로드
+}
+
+void JumpLevel::PlayerGotoPreviousStage()
+{
+}
+
+void JumpLevel::LoadNextStage(const char* filename)
+{
+
+}
+
+void JumpLevel::SavePlayerData(const int goalIndex)
+{
+	// 플레이어 상태 저장
+	// isSaved가 켜졌다면 앞으로 플레이어를 생성시 로드해야함
+	playerData.isSaved = true;
+
+	playerData.goalIndex = goalIndex;
+	playerData.velocityX = player->velocityX;
+	playerData.velocityY = player->velocityY;
+	playerData.isLeft = player->isLeft;
+	playerData.isLanding = player->isLanding;
+	playerData.isJumping = player->isJumping;
+	playerData.isFalling = player->isFalling;	
+}
+
+void JumpLevel::LoadPlayerData()
+{
+	
+}
+
 void JumpLevel::CheckGameClear()
 {
 	// Todo: 플레이어가 Flag에 닿았는지 확인
@@ -214,27 +294,26 @@ void JumpLevel::CheckGameClear()
 
 void JumpLevel::ProcessCollisionPlayerAndOther()
 {
+	if (!player)
+	{
+		return;
+	}
+
 	// 액터 필터링을 위한 변수.
-	Player* player = nullptr;
 	std::vector<Actor*> others;
 
 	// 액터 필터링.
 	for (Actor* const actor : actors)
 	{
-		if (!player && actor->IsTypeOf<Player>())
-		{
-			player = actor->As<Player>();
-			continue;
-		}
 		// 맵 경계와 플레이어를 제외한 액터 배열에 추가
-		if (!actor->IsTypeOf<Block>())
+		if (actor != player && !actor->IsTypeOf<Block>())
 		{
 			others.emplace_back(actor);
 		}
 	}
 
 	// 판정 처리 안해도 되는지 확인.
-	if (others.size() == 0 || !player)
+	if (others.size() == 0)
 	{
 		return;
 	}
@@ -243,7 +322,7 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 	for (Actor* const actor : others)
 	{
 		// 충돌 검사
-		Vector2 crashedDir = player->TestIntersect(actor);
+		Vector2 crashedDir = player->TestIntersect(*actor);
 
 		// 충돌하지 않은 액터 넘기기
 		if (crashedDir == Vector2::Zero)
@@ -251,7 +330,27 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 			continue;
 		}
 
+		// 충돌한 액터가 목적지라면 다음 스테이지 로드
+		if (actor->IsTypeOf<Goal>())
+		{
+			// 다음 레벨로 가도록 레벨 상태 저장
+			state = LevelState::NextLevel;
+
+			// 통과한 목적지의 인덱스 찾기
+			int goalIndex = 0;
+			while (upwardGoal[goalIndex] != actor)
+			{
+				goalIndex++;
+			}
+
+			// 플레이어 상태 저장
+			SavePlayerData(goalIndex);
+
+			return;
+		}
+
 		// 충돌한 액터가 가시라면 사망처리
+		// Todo: 스테이지 1로 돌아가서 리스폰
 		if (actor->IsTypeOf<Spike>())
 		{
 			// 플레이어 죽음 설정
@@ -259,6 +358,10 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 
 			// 플레이어 사망 처리
 			player->Die();
+
+			// 포인터 초기화
+			player = nullptr;
+
 			return;
 		}
 
@@ -270,28 +373,26 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 
 void JumpLevel::CheckGround()
 {
+	if (!player)
+	{
+		return;
+	}
+
 	// 액터 필터링을 위한 변수.
-	Player* player = nullptr;
 	std::vector<Actor*> grounds;
 
 	// 액터 필터링.
 	for (Actor* const actor : actors)
 	{
-		if (!player && actor->IsTypeOf<Player>())
-		{
-			player = actor->As<Player>();
-			continue;
-		}
-
 		// 맵 경계와 플레이어를 제외한 액터 배열에 추가
-		if (!actor->IsTypeOf<Block>())
+		if (actor != player && !actor->IsTypeOf<Block>())
 		{
 			grounds.emplace_back(actor);
 		}
 	}
 
 	// 판정 처리 안해도 되는지 확인.
-	if (grounds.size() == 0 || !player)
+	if (grounds.size() == 0)
 	{
 		return;
 	}
@@ -333,6 +434,9 @@ void JumpLevel::CheckGround()
 
 				// 플레이어 사망 처리
 				player->Die();
+
+				// 포인터 초기화
+				player = nullptr;
 			}
 
 			return;
@@ -346,5 +450,6 @@ void JumpLevel::CheckGround()
 
 void JumpLevel::RespawnPlayer()
 {
-	AddNewActor(new Player(playerSpawnPosition));
+	player = new Player(playerSpawnPosition);
+	AddNewActor(player);
 }

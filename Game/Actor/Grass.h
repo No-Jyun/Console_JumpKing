@@ -4,6 +4,7 @@
 
 using namespace Wanted;
 
+// 풀(바닥) 타일 액터 클래스
 class Grass : public Actor
 {
 	// RTTI 선언

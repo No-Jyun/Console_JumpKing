@@ -4,6 +4,7 @@
 
 using namespace Wanted;
 
+// 땅(바닥) 타일 액터 클래스
 class Ground : public Actor
 {
 	// RTTI 선언

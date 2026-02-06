@@ -4,6 +4,7 @@
 #include "Util/Util.h"
 #include "Util/Timer.h"
 
+// 플레이어 사망시 사망 이펙트 액터 클래스
 class PlayerDeadEffect : public Actor
 {
 	RTTI_DECLARATIONS(PlayerDeadEffect, Actor)
