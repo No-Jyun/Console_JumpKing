@@ -73,7 +73,7 @@ private:
 	bool isLeft = false;
 
 	// 공중에 있는지 판단하는 변수
-	bool isJumping = false;
+	bool onAir = false;
 
 	// 플레이어가 점프키를 눌렀는지 판단하는 변수
 	bool isJumpKeyDown = false;
@@ -82,16 +82,17 @@ private:
 	float y = 0.0f;
 
 	// Todo: 이동속도 조정
-	float moveSpeed = 30.0f;
+	float moveSpeed = 10.0f;
 	//float maxSpeed = 5.0f;
 
 	// 점프 관련 변수
 	// 중력 가속도 설정
-	const float gravity = 1.5f;
+	const float gravity = 10.0f;
+	//const float maxFallSpeed = 10.0f;
 
 	// 현재 속도
-	float jumpVelocityX = 0.0f;
-	float jumpVelocityY = 0.0f;
+	float velocityX = 0.0f;
+	float velocityY = 0.0f;
 
 	// 타이머 변수
 	Timer jumpTimer;

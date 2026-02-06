@@ -27,21 +27,17 @@ void Player::Tick(float deltaTime)
 	}
 
 	// 점프 중에는 입력 방지
-	if (!isJumping)
+	if (!onAir)
 	{
-		// 점프키 입력 중에는 좌우 이동 불가
-		if (!isJumpKeyDown)
+		// 좌우 방향키 입력처리.
+		if (Input::Get().GetKey(VK_LEFT))
 		{
-			// 좌우 방향키 입력처리.
-			if (Input::Get().GetKey(VK_LEFT))
-			{
-				MoveLeft(deltaTime);
-			}
+			MoveLeft(deltaTime);
+		}
 
-			if (Input::Get().GetKey(VK_RIGHT))
-			{
-				MoveRight(deltaTime);
-			}
+		if (Input::Get().GetKey(VK_RIGHT))
+		{
+			MoveRight(deltaTime);
 		}
 
 		// 점프 입력 처리
@@ -74,6 +70,13 @@ void Player::Tick(float deltaTime)
 
 void Player::MoveLeft(float deltaTime)
 {
+	// 점프키 입력 중에는 좌우 방향 지정만 가능
+	if (isJumpKeyDown)
+	{
+		isLeft = true;
+		return;
+	}
+
 	// 이동속도에 따른 왼쪽 이동 처리
 	x -= moveSpeed * deltaTime;
 
@@ -93,6 +96,13 @@ void Player::MoveLeft(float deltaTime)
 
 void Player::MoveRight(float deltaTime)
 {
+	// 점프키 입력 중에는 좌우 방향 지정만 가능
+	if (isJumpKeyDown)
+	{
+		isLeft = false;
+		return;
+	}
+
 	// 이동속도에 따른 오른쪽 이동 처리
 	x += moveSpeed * deltaTime;
 
@@ -139,35 +149,42 @@ void Player::Jump()
 
 	// 현재 방향으로 특정 점프력으로 점프를 하기위해
 	// x와 y 방향으로 가해야하는 가속도 계산
+	// 중력 가속도와 점프력(정점 높이)를 알고 있다.
 
 	// 플레이어가 점프키를 입력한 시간만큼 점프력이 결정되며,
 	// 결정된 점프력을 Z라고 하고, 원점에서 점프를 한다고 가정할때,
-	// 플레이어는 (0,0) -> (Z,Z) -> (2*Z,0) 을 포물선을 그리며 2초 동안 이동한다
+	// 플레이어는 (0,0) -> (Z,Z) -> (2*Z,0) 을 포물선을 그리며 이동한다
+	
 	// 이때 정점에 도달 했을때 y좌표의 가속도는 
-	// 0 = y좌표의 초기 속도 - (중력 가속도) * (정점까지 걸리는 시간)
+	// 0 = (y좌표의 초기 속도) - (중력 가속도) * (정점까지 걸리는 시간)
 	// 그러므로 정점까지 걸리는 시간 = y좌표의 초기 속도 / 중력 가속도
 	// 위치 함수에 정점 도달을 대입하면
 	// 정점y = (y좌표의 초기 속도)^2 / (2 * 중력 가속도) 이므로
 	// y좌표의 초기 속도 = (2 * 중력 가속도 * 정점y)의 제곱근 이다.
 	// 콘솔에서 점프, 위로 올라가려면 y좌표가 낮아져야 하므로 뺀다.
-	jumpVelocityY -= Util::Sqrt(2.0f * gravity * static_cast<float>(jumpPower));
+	velocityY = -(Util::Sqrt(2.0f * gravity * static_cast<float>(jumpPower)));
 
 	// x좌표는 중력의 영향을 안받는 등가속도 운동을 해야한다.
 	// 위치식 : x(t) = x(0) + v*t 
-	// 원점에서 정점에 도달하는 시간 = 정점에서 도착점에 도달하는 시간 이므로
-	// 전체 점프 시간 = 2* 정점까지 걸리는 시간, 위에서 구한 정점까지 걸리는 시간을 대입하면
-	// 전체 점프 시간 = (2 * y좌표의 초기 시간) / 중력 가속도 이다.
-	// x좌표의 전체 이동거리는 속도 * 시간이므로
-	// x좌표의 초기 속도 = x좌표의 전체 이동거리 / 전체 점프 시간 으로 위에서 구한 전체 점프 시간을 대입하면
-	// x좌표의 초기 속도 = ((x좌표의 전체 이동거리) * (중력 가속도)) / (2 * y좌표의 초기 속도)
-	float absVelocity = (2.0f * static_cast<float>(jumpPower) * gravity) / jumpVelocityY;
+	// 원점에서 정점에 도달하는 시간 = y좌표의 초기 속도 / 중력 가속도 이므로
+	float peakT = abs(velocityY) / gravity;
+	
+	// 전체 점프 시간 = 2 * 정점까지 걸리는 시간
+	float totalT = 2.0f * peakT;
+
+	// x좌표의 전체 이동 거리 = x좌표의 초기 속도 * 전체 점프 시간
+	// x좌표의 초기 속도 = x좌표의 전체 이동 거리 / 전체 점프 시간
+	velocityX = (2.0f * static_cast<float>(jumpPower)) / totalT;
 
 	// 방향에 따라 가속도 설정
-	// Todo: 원인 찾기
-	jumpVelocityX = isLeft ? absVelocity : -absVelocity;
+	velocityX = isLeft ? -velocityX : velocityX;
+
+	// Test
+	//jumpVelocityX *= 120.0f;
+	//jumpVelocityY *= 120.0f;
 
 	// 점프 중
-	isJumping = true;
+	onAir = true;
 
 	// 점프 상태로 변경
 	state = PlayerState::Upward;
@@ -176,11 +193,14 @@ void Player::Jump()
 void Player::Jumping(float deltaTime)
 {
 	// y좌표 속도는 중력의 영향을 받음
-	jumpVelocityY += gravity * deltaTime;
+	velocityY += gravity * deltaTime;
+
+	// 최대 추락 속도 제한 필요?
+	//if(velocityY )
 
 	// 이동
-	x += jumpVelocityX * deltaTime;
-	y += jumpVelocityY * deltaTime;
+	x += velocityX * deltaTime;
+	y += velocityY * deltaTime;
 
 	// 좌표 처리
 	if (x < 0.0f)
@@ -201,13 +221,13 @@ void Player::Jumping(float deltaTime)
 	// 버퍼의 맨 위에 도달했다면 아래로 추락
 	else if (y < 0.0f)
 	{
-		jumpVelocityY = 0.0f;
+		velocityY = 0.0f;
 		y = 0.0f;
 	}
 	position.y = static_cast<int>(y);
 
 	// 가속도가 양수가 되면(정점을 지나면) 내려가는 상태로 변경
-	if (jumpVelocityY >= 0.0f)
+	if (velocityY >= 0.0f)
 	{
 		state = PlayerState::Downward;
 	}
@@ -247,22 +267,25 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 	// 물체의 특정 한 지점을 기준으로 끝단을 구함
 	// 예 : 사각형의 좌상단, 우하단 / 우상단, 좌하단
 
+	// 현재 액터들은 한 문자 크기 이므로
+	// 크기가 1인 정사각형으로 간주한다.
+	// 따라서 각 꼭지점의 좌표에 해당하는 x,y값을 구하여 비교한다
+
 	// 자기자신의 x좌표 정보
 	float xMin = x;
-	float xMax = x + width - 1;
+	float xMax = x + 1.0f;
 
 	// 자기자신의 y좌표 정보
 	float yMin = y;
-	float yMax = y + 1;
+	float yMax = y + 1.0f;
 
 	// 충돌을 비교할 다른 액터의 x좌표 정보
 	float otherXMin = static_cast<float>(other->GetPosition().x);
-	float otherXMax = static_cast<float>(other->GetPosition().x + other->GetWidth() - 1);
+	float otherXMax = static_cast<float>(other->GetPosition().x + other->GetWidth());
 
 	// 충돌을 비교할 다른 액터의 y좌표 정보
 	float otherYMin = static_cast<float>(other->GetPosition().y);
 	float otherYMax = static_cast<float>(other->GetPosition().y + 1);
-
 
 	// 안겹치는 조건 확인
 	// 다른 액터의 왼쪽 좌표가 내 오른쪽 좌표보다 더 오른쪽에 있는 경우
@@ -298,13 +321,13 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 	{
 		// x축으로 더 적게 겹침 -> 좌/우 충돌
 		// 다른 액터의 오른쪽 좌표가 내 왼쪽 좌표보다 큰 경우 
-		if (xMin < otherXMax) 
+		if (xMin < otherXMax)
 		{
 			// 플레이어 기준 왼쪽에서 충돌
 			return Vector2::Left;
 		}
 		// 다른 액터의 왼쪽 좌표가 내 오른쪽 좌표보다 큰 경우 
-		else 
+		else
 		{
 			// 플레이어 기준 오른쪽에서 충돌
 			return Vector2::Right;
@@ -314,16 +337,19 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 	{
 		// y축으로 더 적게 겹침 -> 상/하 충돌
 		// 다른 액터의 아래 좌표가 내 위 좌표보다 큰 경우 
-		if (yMin < otherYMax) 
+		// Todo: 반대인 원인 해결
+		if (yMin < otherYMax)
 		{
 			// 플레이어 기준 위에서 충돌
-			return Vector2::Up;
+			//return Vector2::Up;
+			return Vector2::Down;
 		}
 		// 다른 액터의 위 좌표가 내 아래 좌표보다 큰 경우 
 		else
 		{
 			// 플레이어 기준 아래에서 충돌
-			return Vector2::Down;
+			//return Vector2::Down;
+			return Vector2::Up;
 		}
 	}
 
@@ -331,20 +357,13 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 	return Vector2::Zero;
 }
 
-
 void Player::OnGround(const Actor& other)
 {
-	// 레벨이 호출해줌
+	onAir = false;
 
-	isJumping = false;
-
-	// 점프 가속도 초기화
-	jumpVelocityX = 0.0f;
-	jumpVelocityY = 0.0f;
-
-	// Todo: x, y 좌표 보정
-	x = static_cast<float>(position.x);
-	y = static_cast<float>(position.y);
+	// 가속도 초기화
+	velocityX = 0.0f;
+	velocityY = 0.0f;
 
 	// 방향에 맞춰 상태 변경
 	state = isLeft ? PlayerState::IdleL : PlayerState::IdleR;
@@ -352,6 +371,15 @@ void Player::OnGround(const Actor& other)
 
 void Player::CrashedWithOther(const Vector2& crashedDirection, const Actor& other)
 {
+	// Todo: x, y 좌표 보정
+	x = static_cast<float>(position.x);
+	y = static_cast<float>(position.y);
+
+	// 착륙한 경우
+	if (crashedDirection == Vector2::Down)
+	{
+		OnGround(other);
+	}
 }
 
 void Player::ChangeImageAndColor()

@@ -189,4 +189,6 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 		player->CrashedWithOther(crashedDir, *actor);
 		break;
 	}
+
+	// 점프 중도 아니고 바닥과도 충돌하고 있지 않다면 낙하 중인가?
 }
