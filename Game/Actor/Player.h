@@ -41,6 +41,9 @@ public:
 	// 빙판길인지 업데이트하는 함수
 	inline void UpdateIsOnIce(bool isIce) { isOnIce = isIce; }
 
+	// 플레이어 사망 처리
+	void Die();
+
 	// 플레이어의 세부 좌표 Getter
 	inline const float GetXPosition() { return x; }
 	inline const float GetYposition() { return y; }
@@ -127,5 +130,6 @@ private:
 
 	// 플레이어 상태
 	PlayerState state;
+
 };
 

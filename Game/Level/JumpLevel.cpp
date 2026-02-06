@@ -25,15 +25,39 @@ static const char* stage[] =
 };
 
 JumpLevel::JumpLevel(const int stageIndex)
-	: playerDeadPosition(Vector2::Zero)
+	: playerSpawnPosition(Vector2::Zero)
 {
 	// stageIndex에 맞는 stage 로드
 	LoadMap(stage[stageIndex]);
+
+	// 리스폰 타이머 설정
+	playerRespawnTimer.SetTargetTime(playerRepawnTime);
 }
 
 void JumpLevel::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
+
+	// 플레이어 사망시
+	if (isPlayerDead)
+	{
+		// 리스폰 타이머 증가
+		playerRespawnTimer.Tick(deltaTime);
+
+		// 리스폰 타이머 경과시
+		if (playerRespawnTimer.IsTimeOut())
+		{
+			// 플레이어 사망 변수 초기화
+			isPlayerDead = false;
+
+			// 리스폰 타이머 초기화
+			playerRespawnTimer.Reset();
+
+			// 플레이어 리스폰
+			AddNewActor(new Player(playerSpawnPosition));
+		}
+		return;
+	}
 
 	// 충돌 판정 처리
 	ProcessCollisionPlayerAndOther();
@@ -124,18 +148,22 @@ void JumpLevel::LoadMap(const char* filename)
 		switch (mapCharacter)
 		{
 		case '#':
+			// 블럭(맵 경계) 생성
 			AddNewActor(new Block(position));
 			break;
 
 		case '.':
+			// 땅(바닥) 타일 생성
 			AddNewActor(new Ground(position));
 			break;
 
 		case ',':
+			// 잔디(땅과 같은 바닥) 타일 생성
 			AddNewActor(new Grass(position));
 			break;
 
 		case '*':
+			// 얼음(미끄러짐) 타일 생성
 			AddNewActor(new Ice(position));
 			break;
 
@@ -143,13 +171,16 @@ void JumpLevel::LoadMap(const char* filename)
 		case '1':
 		case '2':
 		case '3':
-			// Todo: 가시
 			// 가시 방향 인덱스 값 전달
 			AddNewActor(new Spike(position, mapCharacter - '0'));
 			break;
 
 
 		case 'p':
+			// 맵 로드시 플레이어 생성 위치 초기화
+			playerSpawnPosition = position;
+
+			// 플레이어 생성
 			AddNewActor(new Player(position));
 			break;
 		}
@@ -184,7 +215,7 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 			player = actor->As<Player>();
 			continue;
 		}
-
+		// 맵 경계와 플레이어를 제외한 액터 배열에 추가
 		if (!actor->IsTypeOf<Block>())
 		{
 			others.emplace_back(actor);
@@ -209,6 +240,17 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 			continue;
 		}
 
+		// 충돌한 액터가 가시라면 사망처리
+		if (actor->IsTypeOf<Spike>())
+		{
+			// 플레이어 죽음 설정
+			isPlayerDead = true;
+
+			// 플레이어 사망 처리
+			player->Die();
+			return;
+		}
+
 		// 플레이어에게 충돌방향과 액터 알리기
 		player->CrashedWithOther(crashedDir, *actor);
 		break;
@@ -230,6 +272,7 @@ void JumpLevel::CheckGround()
 			continue;
 		}
 
+		// 맵 경계와 플레이어를 제외한 액터 배열에 추가
 		if (!actor->IsTypeOf<Block>())
 		{
 			grounds.emplace_back(actor);
@@ -261,6 +304,7 @@ void JumpLevel::CheckGround()
 		{
 			player->UpdateIsLanding(true);
 
+			// 얼음을 밟은 경우
 			if (ground->IsTypeOf<Ice>())
 			{
 				player->UpdateIsOnIce(true);
@@ -270,6 +314,16 @@ void JumpLevel::CheckGround()
 				player->UpdateIsOnIce(false);
 			}
 
+			// 가시를 밟은 경우
+			if (ground->IsTypeOf<Spike>())
+			{
+				// 플레이어 죽음 설정
+				isPlayerDead = true;
+
+				// 플레이어 사망 처리
+				player->Die();
+			}
+
 			return;
 		}
 	}
@@ -277,4 +331,9 @@ void JumpLevel::CheckGround()
 	// 발판 판정이후 리턴되지 않았다면 플레이어 아래에
 	// 발판이 없다는 뜻이므로 isLanding 업데이트
 	player->UpdateIsLanding(false);
+}
+
+void JumpLevel::RespawnPlayer()
+{
+	AddNewActor(new Player(playerSpawnPosition));
 }

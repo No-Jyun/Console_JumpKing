@@ -2,6 +2,7 @@
 
 #include "Level/Level.h"
 #include "Math/Vector2.h"
+#include "Util/Timer.h"
 
 using namespace Wanted;
 
@@ -31,13 +32,24 @@ private:
 	// 플레이어의 발판을 확인하는 함수
 	void CheckGround();
 
+	// 플레이어 리스폰 함수
+	void RespawnPlayer();
+
 
 private:
 	// 게임 클리어 여부를 알려주는 변수
 	bool isGameClear = false;	
 
-	// Todo: 플레이어가 죽은 위치 (Draw에서 처리하기 위해 Tick에서 저장)
-	Vector2 playerDeadPosition;
+	// 플레이어가 죽었는지 확인.
+	bool isPlayerDead = false;
 
+	// 플레이어 생성 위치 (플레이어 리스폰 위해 생성시 저장)
+	Vector2 playerSpawnPosition;
+
+	// 플레이어 리스폰 대기시간
+	const float playerRepawnTime = 1.5f;
+
+	// 플레이어 리스폰 타이머
+	Timer playerRespawnTimer;
 };
 

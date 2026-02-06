@@ -2,6 +2,8 @@
 #include "Core/Input.h"
 #include "Engine/Engine.h"
 #include "Util/Util.h"
+#include "Level/Level.h"
+#include "Actor/PlayerDeadEffect.h"
 
 Player::Player(const Vector2& position)
 	: super("b", position, Color::Green), state(PlayerState::IdleR)
@@ -251,7 +253,7 @@ void Player::Jump()
 
 	// 플레이어가 점프키를 입력한 시간만큼 점프력이 결정되며,
 	// 결정된 점프력을 Z라고 하고, 원점에서 점프를 한다고 가정할때,
-	// 플레이어는 (0,0) -> (Z/2,Z) -> (Z,0) 을 포물선을 그리며 이동한다
+	// 플레이어는 (0,0) -> (Z*0.75,Z) -> (Z*1.5,0) 을 포물선을 그리며 이동한다
 
 	// 이때 정점에 도달 했을때 y좌표의 가속도는 
 	// 0 = (y좌표의 초기 속도) - (중력 가속도) * (정점까지 걸리는 시간)
@@ -272,7 +274,7 @@ void Player::Jump()
 
 	// x좌표의 전체 이동 거리 = x좌표의 초기 속도 * 전체 점프 시간
 	// x좌표의 초기 속도 = x좌표의 전체 이동 거리 / 전체 점프 시간
-	velocityX = (static_cast<float>(jumpPower)) / totalT;
+	velocityX = (1.5f * static_cast<float>(jumpPower)) / totalT;
 
 	// 방향에 따라 가속도 설정
 	velocityX = isLeft ? -velocityX : velocityX;
@@ -462,6 +464,15 @@ void Player::CrashedWithOther(const Vector2& crashedDirection, const Actor& othe
 		// x 가속도 0으로 멈추고 추락
 		velocityX = 0.0f;
 	}
+}
+
+void Player::Die()
+{
+	// 액터 제거
+	Destroy();
+
+	// 이펙트 생성 (재생을 위해)
+	GetOwner()->AddNewActor(new PlayerDeadEffect(position));
 }
 
 void Player::ChangeImageAndColor()

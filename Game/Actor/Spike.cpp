@@ -3,9 +3,9 @@
 // 가시 방향에 따른 문자열
 static const char* spikeString[] =
 {
-	"^",
+	"A",
 	">",
-	"v",
+	"V",
 	"<"	
 };
 
