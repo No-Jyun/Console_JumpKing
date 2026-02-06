@@ -6,6 +6,8 @@
 #include "Actor/Ice.h"
 #include "Actor/Spike.h"
 #include "Util/Util.h"
+#include "Core/Input.h"
+#include "Game/Game.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -37,6 +39,15 @@ JumpLevel::JumpLevel(const int stageIndex)
 void JumpLevel::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
+
+	// ESC키 처리.
+	// 플레이어 사망시에도 입력받기 위해서 레벨에서 처리
+	if (Input::Get().GetKeyDown(VK_ESCAPE))
+	{
+		// 메뉴 토글
+		Game::Get().ToggleMenu();
+		return;
+	}
 
 	// 플레이어 사망시
 	if (isPlayerDead)

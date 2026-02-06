@@ -4,6 +4,7 @@
 #include "Util/Util.h"
 #include "Level/Level.h"
 #include "Actor/PlayerDeadEffect.h"
+#include "Game/Game.h"
 
 Player::Player(const Vector2& position)
 	: super("b", position, Color::Green), state(PlayerState::IdleR)
@@ -20,13 +21,6 @@ Player::Player(const Vector2& position)
 void Player::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
-
-	// 종료 처리.
-	if (Input::Get().GetKeyDown(VK_ESCAPE))
-	{
-		// 게임 종료.
-		QuitGame();
-	}
 
 	// 점프 중이 아니고 바닥에 있고 빙판길이 아니라면 입력
 	if (!isJumping && isLanding && !isOnIce)

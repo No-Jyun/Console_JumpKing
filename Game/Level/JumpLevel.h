@@ -35,7 +35,6 @@ private:
 	// 플레이어 리스폰 함수
 	void RespawnPlayer();
 
-
 private:
 	// 게임 클리어 여부를 알려주는 변수
 	bool isGameClear = false;	

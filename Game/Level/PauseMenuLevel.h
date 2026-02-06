@@ -2,6 +2,7 @@
 
 #include "Level/Level.h"
 #include "Math/Color.h"
+#include "Math/Vector2.h"
 
 #include <vector>
 
@@ -38,17 +39,27 @@ struct MenuItem
 
 using namespace Wanted;
 
-class MenuLevel : public Level
+class PauseMenuLevel : public Level
 {
-	RTTI_DECLARATIONS(MenuLevel, Level)
+	RTTI_DECLARATIONS(PauseMenuLevel, Level)
 
 public:
-	MenuLevel();
-	~MenuLevel();
+	PauseMenuLevel();
+	~PauseMenuLevel();
 
 	// 이벤트 함수 오버라이드
 	virtual void Tick(float deltaTime) override;
 	virtual void Draw() override;
+
+private:
+	// 메뉴 로고 그리는 함수
+	void DrawLogo();
+
+	// 메뉴 아이템 그리는 함수
+	void DrawItem();
+
+	// 벡터 멤버 변수 초기화하는 함수
+	void SetVectorPosition();
 
 private:
 	// 현재 활성화된 메뉴 아이템 인덱스
@@ -62,5 +73,17 @@ private:
 	
 	// 메뉴 아이템 배열
 	std::vector<MenuItem*> items;
+
+	// 메뉴 로고 배열 크기
+	int logoArrayLength = 0;
+
+	// 콘솔 화면의 정중앙 값을 저장할 좌표
+	Vector2 consoleCenter;
+
+	// 메뉴 로고 그리는 좌표
+	Vector2 logoPosition;
+
+	// 메뉴 아이템을 그리는 좌표
+	Vector2 itemPosition;
 };
 

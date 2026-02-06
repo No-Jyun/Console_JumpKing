@@ -22,7 +22,7 @@ public:
 	~Game();
 
 	// 메뉴/게임 레벨을 전환하는 함수
-	//void ToggleMenu();
+	void ToggleMenu();
 
 	static Game& Get();
 
