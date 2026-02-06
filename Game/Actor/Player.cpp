@@ -26,8 +26,8 @@ void Player::Tick(float deltaTime)
 		QuitGame();
 	}
 
-	// 점프 중에는 입력 방지
-	if (!onAir)
+	// 점프 중이 아니고 바닥에 있다면 입력
+	if (!isJumping && isLanding)
 	{
 		// 좌우 방향키 입력처리.
 		if (Input::Get().GetKey(VK_LEFT))
@@ -58,8 +58,15 @@ void Player::Tick(float deltaTime)
 			Jumping(deltaTime);
 		}
 	}
+	// 점프 중이 아닌데 바닥에 있지 않다면 공중에 있다는 뜻이므로 추락 처리
+	else if (!isJumping && !isLanding)
+	{
+		// 추락 처리
+		Fall(deltaTime);
+		//Jumping(deltaTime);
+	}
 	// 점프 중이라면 해당 방향으로 힘을 가지고 이동 중
-	else
+	else if(isJumping && !isLanding)
 	{
 		Jumping(deltaTime);
 	}
@@ -68,12 +75,82 @@ void Player::Tick(float deltaTime)
 	ChangeImageAndColor();
 }
 
+void Player::UpdateIsLanding(bool isLanding)
+{
+	this->isLanding = isLanding;
+
+	// 점프 중이였고, 착륙했거나, 추락 중에 바닥에 닿았다면
+	if ((isJumping && isLanding) || (isFalling && isLanding))
+	{
+		x = static_cast<float>(position.x);
+		y = static_cast<float>(position.y);
+
+		// 착륙한 경우
+		isJumping = false;
+		isFalling = false;
+
+		// 가속도 초기화
+		velocityX = 0.0f;
+		velocityY = 0.0f;
+
+		// 방향에 맞춰 상태 변경
+		state = isLeft ? PlayerState::IdleL : PlayerState::IdleR;
+	}
+	// 바닥 판정이후, 점프하지 않았는데 바닥에 없다면
+	// 추락 해야하므로 추락 기본값 세팅
+	else if (!isJumping && !isLanding && !isFalling)
+	{
+		isFalling = true;
+		velocityX = isLeft ? -moveSpeed : moveSpeed;
+		velocityY = 0.0f;
+
+		state = PlayerState::Downward;
+	}
+}
+
+void Player::Fall(float deltaTime)
+{
+	// y좌표 속도는 중력의 영향을 받음
+	velocityY += gravity * deltaTime;
+
+	// 이동
+	x += velocityX * deltaTime;
+	y += velocityY * deltaTime;
+
+	// 좌표 처리
+	if (x < 0.0f)
+	{
+		x = 0.0f;
+	}
+	else if (Util::FloatCastInt(x) + width > Engine::Get().GetWidth())
+	{
+		x = static_cast<float>(Engine::Get().GetWidth() - 1);
+	}
+	position.x = Util::FloatCastInt(x);
+
+	// Todo: 맵의 아래쪽으로 떨어지는 기믹이 필요할까?
+	if (Util::FloatCastInt(y) > Engine::Get().GetHeight())
+	{
+		y = static_cast<float>(Engine::Get().GetHeight() - 1);
+	}
+	// 버퍼의 맨 위에 도달했다면 아래로 추락
+	else if (y < 0.0f)
+	{
+		velocityY = 0.0f;
+		y = 0.0f;
+	}
+	position.y = Util::FloatCastInt(y);
+}
+
 void Player::MoveLeft(float deltaTime)
 {
 	// 점프키 입력 중에는 좌우 방향 지정만 가능
 	if (isJumpKeyDown)
 	{
 		isLeft = true;
+
+		// 플레이어가 왼쪽 보도록 상태 변경
+		state = PlayerState::ChargingL;
 		return;
 	}
 
@@ -87,7 +164,7 @@ void Player::MoveLeft(float deltaTime)
 	}
 
 	// position 벡터에 갱신
-	position.x = static_cast<int>(x);
+	position.x = Util::FloatCastInt(x);
 
 	// 상태 업데이트
 	isLeft = true;
@@ -100,6 +177,9 @@ void Player::MoveRight(float deltaTime)
 	if (isJumpKeyDown)
 	{
 		isLeft = false;
+
+		// 플레이어가 오른쪽 보도록 상태 변경
+		state = PlayerState::ChargingR;
 		return;
 	}
 
@@ -107,13 +187,13 @@ void Player::MoveRight(float deltaTime)
 	x += moveSpeed * deltaTime;
 
 	// 좌표 검사
-	if (static_cast<int>(x) + width > Engine::Get().GetWidth())
+	if (Util::FloatCastInt(x) + width > Engine::Get().GetWidth())
 	{
 		x = static_cast<float>(Engine::Get().GetWidth() - 1);
 	}
 
 	// position 벡터에 갱신
-	position.x = static_cast<int>(x);
+	position.x = Util::FloatCastInt(x);
 
 	// 상태 업데이트
 	isLeft = false;
@@ -125,7 +205,7 @@ void Player::JumpKeyDown(float deltaTime)
 	isJumpKeyDown = true;
 
 	// 점프 충전 상태로 변경
-	state = PlayerState::Charging;
+	state = isLeft ? PlayerState::ChargingL : PlayerState::ChargingR;
 }
 
 void Player::JumpKey(float deltaTime)
@@ -153,8 +233,8 @@ void Player::Jump()
 
 	// 플레이어가 점프키를 입력한 시간만큼 점프력이 결정되며,
 	// 결정된 점프력을 Z라고 하고, 원점에서 점프를 한다고 가정할때,
-	// 플레이어는 (0,0) -> (Z,Z) -> (2*Z,0) 을 포물선을 그리며 이동한다
-	
+	// 플레이어는 (0,0) -> (Z/2,Z) -> (Z,0) 을 포물선을 그리며 이동한다
+
 	// 이때 정점에 도달 했을때 y좌표의 가속도는 
 	// 0 = (y좌표의 초기 속도) - (중력 가속도) * (정점까지 걸리는 시간)
 	// 그러므로 정점까지 걸리는 시간 = y좌표의 초기 속도 / 중력 가속도
@@ -168,23 +248,19 @@ void Player::Jump()
 	// 위치식 : x(t) = x(0) + v*t 
 	// 원점에서 정점에 도달하는 시간 = y좌표의 초기 속도 / 중력 가속도 이므로
 	float peakT = abs(velocityY) / gravity;
-	
+
 	// 전체 점프 시간 = 2 * 정점까지 걸리는 시간
 	float totalT = 2.0f * peakT;
 
 	// x좌표의 전체 이동 거리 = x좌표의 초기 속도 * 전체 점프 시간
 	// x좌표의 초기 속도 = x좌표의 전체 이동 거리 / 전체 점프 시간
-	velocityX = (2.0f * static_cast<float>(jumpPower)) / totalT;
+	velocityX = (static_cast<float>(jumpPower)) / totalT;
 
 	// 방향에 따라 가속도 설정
 	velocityX = isLeft ? -velocityX : velocityX;
 
-	// Test
-	//jumpVelocityX *= 120.0f;
-	//jumpVelocityY *= 120.0f;
-
 	// 점프 중
-	onAir = true;
+	isJumping = true;
 
 	// 점프 상태로 변경
 	state = PlayerState::Upward;
@@ -207,14 +283,14 @@ void Player::Jumping(float deltaTime)
 	{
 		x = 0.0f;
 	}
-	else if (static_cast<int>(x) + width > Engine::Get().GetWidth())
+	else if (Util::FloatCastInt(x) + width > Engine::Get().GetWidth())
 	{
 		x = static_cast<float>(Engine::Get().GetWidth() - 1);
 	}
-	position.x = static_cast<int>(x);
+	position.x = Util::FloatCastInt(x);
 
 	// Todo: 맵의 아래쪽으로 떨어지는 기믹이 필요할까?
-	if (static_cast<int>(y) > Engine::Get().GetHeight())
+	if (Util::FloatCastInt(y) > Engine::Get().GetHeight())
 	{
 		y = static_cast<float>(Engine::Get().GetHeight() - 1);
 	}
@@ -224,7 +300,7 @@ void Player::Jumping(float deltaTime)
 		velocityY = 0.0f;
 		y = 0.0f;
 	}
-	position.y = static_cast<int>(y);
+	position.y = Util::FloatCastInt(y);
 
 	// 가속도가 양수가 되면(정점을 지나면) 내려가는 상태로 변경
 	if (velocityY >= 0.0f)
@@ -235,6 +311,7 @@ void Player::Jumping(float deltaTime)
 
 const int Player::GetJumpPower(const float chargedTime)
 {
+	// 점프력 조정 필요
 	if (chargedTime <= 0.2f)
 	{
 		return 1;
@@ -245,7 +322,7 @@ const int Player::GetJumpPower(const float chargedTime)
 	}
 	else if (chargedTime <= 0.6f)
 	{
-		return 3;
+		return 4;
 	}
 	else if (chargedTime <= 0.8f)
 	{
@@ -253,11 +330,11 @@ const int Player::GetJumpPower(const float chargedTime)
 	}
 	else if (chargedTime <= 1.0f)
 	{
-		return 7;
+		return 6;
 	}
 	else
 	{
-		return 10;
+		return 8;
 	}
 }
 
@@ -341,32 +418,14 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 		if (yMin < otherYMax)
 		{
 			// 플레이어 기준 위에서 충돌
-			//return Vector2::Up;
-			return Vector2::Down;
-		}
-		// 다른 액터의 위 좌표가 내 아래 좌표보다 큰 경우 
-		else
-		{
-			// 플레이어 기준 아래에서 충돌
-			//return Vector2::Down;
 			return Vector2::Up;
 		}
+		// 다른 액터의 위 좌표가 내 아래 좌표보다 큰 경우
+		// 바닥과의 충돌이므로 다른 곳에서 처리
 	}
 
 	// 예외상황을 위한 리턴
 	return Vector2::Zero;
-}
-
-void Player::OnGround(const Actor& other)
-{
-	onAir = false;
-
-	// 가속도 초기화
-	velocityX = 0.0f;
-	velocityY = 0.0f;
-
-	// 방향에 맞춰 상태 변경
-	state = isLeft ? PlayerState::IdleL : PlayerState::IdleR;
 }
 
 void Player::CrashedWithOther(const Vector2& crashedDirection, const Actor& other)
@@ -375,10 +434,21 @@ void Player::CrashedWithOther(const Vector2& crashedDirection, const Actor& othe
 	x = static_cast<float>(position.x);
 	y = static_cast<float>(position.y);
 
-	// 착륙한 경우
-	if (crashedDirection == Vector2::Down)
+	// 위에 충돌한 경우
+	if (crashedDirection == Vector2::Up)
 	{
-		OnGround(other);
+		// y 가속도 0으로 바로 추락
+		velocityY = 0.0f;
+	}
+	else if (crashedDirection == Vector2::Left)
+	{
+		// x 가속도 0으로 멈추고 추락
+		velocityX = 0.0f;
+	}
+	else if (crashedDirection == Vector2::Right)
+	{
+		// x 가속도 0으로 멈추고 추락
+		velocityX = 0.0f;
 	}
 }
 
@@ -393,13 +463,16 @@ const char* Player::GetPlayerStringByState(const PlayerState& state)
 	switch (state)
 	{
 	case PlayerState::IdleL:
-		return "d";
+		return "q";
 
 	case PlayerState::IdleR:
-		return "b";
+		return "p";
 
-	case PlayerState::Charging:
-		return "o";
+	case PlayerState::ChargingL:
+		return "d";
+
+	case PlayerState::ChargingR:
+		return "b";
 
 	case PlayerState::Upward:
 		return "U";
@@ -422,7 +495,8 @@ const Color Player::GetPlayerColorByState(const PlayerState& state)
 	case PlayerState::IdleR:
 		return Color::Green;
 
-	case PlayerState::Charging:
+	case PlayerState::ChargingL:
+	case PlayerState::ChargingR:
 		return Color::LightGreen;
 
 	case PlayerState::Upward:

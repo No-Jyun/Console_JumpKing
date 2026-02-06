@@ -28,6 +28,10 @@ private:
 	// Todo: 가시와 충돌
 	//void ProcessCollisionPlayerAndSpike();
 
+	// 플레이어의 발판을 확인하는 함수
+	void CheckGround();
+
+
 private:
 	// 게임 클리어 여부를 알려주는 변수
 	bool isGameClear = false;	

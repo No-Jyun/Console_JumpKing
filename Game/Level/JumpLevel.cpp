@@ -2,6 +2,7 @@
 #include "Actor/Block.h"
 #include "Actor/Ground.h"
 #include "Actor/Player.h"
+#include "Util/Util.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -33,6 +34,9 @@ void JumpLevel::Tick(float deltaTime)
 
 	// 충돌 판정 처리
 	ProcessCollisionPlayerAndOther();
+
+	// 발판 확인 
+	CheckGround();
 
 	// Draw 필요??
 	// 플레이어가 죽었을 경우 / 클리어 했을 경우
@@ -189,6 +193,58 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 		player->CrashedWithOther(crashedDir, *actor);
 		break;
 	}
+}
 
-	// 점프 중도 아니고 바닥과도 충돌하고 있지 않다면 낙하 중인가?
+void JumpLevel::CheckGround()
+{
+	// 액터 필터링을 위한 변수.
+	Player* player = nullptr;
+	std::vector<Actor*> grounds;
+
+	// 액터 필터링.
+	for (Actor* const actor : actors)
+	{
+		if (!player && actor->IsTypeOf<Player>())
+		{
+			player = actor->As<Player>();
+			continue;
+		}
+
+		if (!actor->IsTypeOf<Block>())
+		{
+			grounds.emplace_back(actor);
+		}
+	}
+
+	// 판정 처리 안해도 되는지 확인.
+	if (grounds.size() == 0 || !player)
+	{
+		return;
+	}
+
+	// 발판 판정.
+	for (Actor* const ground : grounds)
+	{
+		// x좌표가 같지 않은 액터 넘기기
+		if (player->GetPosition().x != ground->GetPosition().x)
+		{
+			continue;
+		}
+
+		// 플레이어 아래의 발판 검사
+		// 플레이어의 높이가 1이므로 1을 더한다
+		float playerFoot = player->GetYposition() + 1.0f;
+		float groundTop = Util::FloatCastInt(ground->GetPosition().y);
+
+		// 플레이어가 한칸 내려간다면 겹치는 여부 판단 
+		if (playerFoot == groundTop)
+		{
+			player->UpdateIsLanding(true);
+			return;
+		}
+	}
+
+	// 발판 판정이후 리턴되지 않았다면 플레이어 아래에
+	// 발판이 없다는 뜻이므로 isLanding 업데이트
+	player->UpdateIsLanding(false);
 }

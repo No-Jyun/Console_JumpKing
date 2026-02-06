@@ -13,7 +13,8 @@ class Player : public Actor
 		None,
 		IdleL,
 		IdleR,
-		Charging,
+		ChargingL,
+		ChargingR,
 		Upward,
 		Downward,
 		Die,
@@ -27,15 +28,19 @@ public:
 
 	virtual void Tick(float deltaTime) override;
 
-	// 플레이어가 바닥에 있다고 알려주는 함수
-	void OnGround(const Actor& other);
-
 	// 플레이어 기준 벡터 방향으로 충돌하고 충돌 조치하는 함수
 	void CrashedWithOther(const Vector2& crashedDirection, const Actor& other);
 
 	// 충돌 여부 확인 함수, 충돌하는 경우가 플레이어와 다른 액터뿐이므로 
 	// 플레이어의 함수로 이동
 	const Vector2 TestIntersect(const Actor* const other);
+
+	// 추락 판단을 위해 플레이어 아래의 블럭여부를 업데이트하는 함수
+	void UpdateIsLanding(bool isLanding);
+
+	// 플레이어의 세부 좌표 Getter
+	inline const float GetXPosition() { return x; }
+	inline const float GetYposition() { return y; }
 
 	// 상태에 따른 애니메이션 (문자열) 변경
 	void ChangeImageAndColor();
@@ -62,6 +67,9 @@ private:
 	// 점프력을 구하는 함수
 	const int GetJumpPower(const float chargedTime);
 
+	// 추락 시키는 함수
+	void Fall(float deltaTime);
+
 	// 왼쪽으로 이동하는 함수
 	void MoveLeft(float deltaTime);
 
@@ -72,12 +80,19 @@ private:
 	// 좌우 구분 변수
 	bool isLeft = false;
 
-	// 공중에 있는지 판단하는 변수
-	bool onAir = false;
+	// 바닥에 있는지 판단하는 변수
+	bool isLanding = true;
+
+	// 점프 중인지 판단하는 변수
+	bool isJumping = false;
+
+	// 추락 중인지 판단하는 변수
+	bool isFalling = false;
 
 	// 플레이어가 점프키를 눌렀는지 판단하는 변수
 	bool isJumpKeyDown = false;
 
+	// float를 사용하여 가속도 운동 처리
 	float x = 0.0f;
 	float y = 0.0f;
 
@@ -87,7 +102,7 @@ private:
 
 	// 점프 관련 변수
 	// 중력 가속도 설정
-	const float gravity = 10.0f;
+	const float gravity = 15.0f;
 	//const float maxFallSpeed = 10.0f;
 
 	// 현재 속도

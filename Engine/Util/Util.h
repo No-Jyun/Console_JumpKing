@@ -108,6 +108,19 @@ namespace Util
 	{
 		return sqrt(value);
 	}
+
+	// float -> int 형변환시 반올림하여 구하는 함수
+	inline int FloatCastInt(const float value)
+	{
+		if (value >= 0.0f)
+		{
+			return static_cast<int>(value + 0.5f);
+		}
+		else
+		{
+			return static_cast<int>(value - 0.5f);
+		}
+	}
 }
 
 // 메모리 정리 함수.
