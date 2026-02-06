@@ -26,8 +26,8 @@ void Player::Tick(float deltaTime)
 		QuitGame();
 	}
 
-	// 점프 중이 아니고 바닥에 있다면 입력
-	if (!isJumping && isLanding)
+	// 점프 중이 아니고 바닥에 있고 빙판길이 아니라면 입력
+	if (!isJumping && isLanding && !isOnIce)
 	{
 		// 좌우 방향키 입력처리.
 		if (Input::Get().GetKey(VK_LEFT))
@@ -69,6 +69,11 @@ void Player::Tick(float deltaTime)
 	else if(isJumping && !isLanding)
 	{
 		Jumping(deltaTime);
+	}
+	// 빙판길 위라면 해당 방향으로 자동 이동
+	else if (isOnIce)
+	{
+		MoveOnIce(deltaTime);
 	}
 
 	// 상태 변화에 따른 문자열, 색상 변경
@@ -118,27 +123,19 @@ void Player::Fall(float deltaTime)
 	y += velocityY * deltaTime;
 
 	// 좌표 처리
-	if (x < 0.0f)
-	{
-		x = 0.0f;
-	}
-	else if (Util::FloatCastInt(x) + width > Engine::Get().GetWidth())
-	{
-		x = static_cast<float>(Engine::Get().GetWidth() - 1);
-	}
+	x = CheckXPosition(x);
+
+	// position 벡터에 갱신
 	position.x = Util::FloatCastInt(x);
 
 	// Todo: 맵의 아래쪽으로 떨어지는 기믹이 필요할까?
+	// 추락은 떨어지기만 하므로 아래 체크만 하면 됨 
 	if (Util::FloatCastInt(y) > Engine::Get().GetHeight())
 	{
 		y = static_cast<float>(Engine::Get().GetHeight() - 1);
 	}
-	// 버퍼의 맨 위에 도달했다면 아래로 추락
-	else if (y < 0.0f)
-	{
-		velocityY = 0.0f;
-		y = 0.0f;
-	}
+	
+	// position 벡터에 갱신
 	position.y = Util::FloatCastInt(y);
 }
 
@@ -158,10 +155,7 @@ void Player::MoveLeft(float deltaTime)
 	x -= moveSpeed * deltaTime;
 
 	// 좌표 검사
-	if (x < 0.0f)
-	{
-		x = 0.0f;
-	}
+	x = CheckXPosition(x);
 
 	// position 벡터에 갱신
 	position.x = Util::FloatCastInt(x);
@@ -187,10 +181,7 @@ void Player::MoveRight(float deltaTime)
 	x += moveSpeed * deltaTime;
 
 	// 좌표 검사
-	if (Util::FloatCastInt(x) + width > Engine::Get().GetWidth())
-	{
-		x = static_cast<float>(Engine::Get().GetWidth() - 1);
-	}
+	x = CheckXPosition(x);
 
 	// position 벡터에 갱신
 	position.x = Util::FloatCastInt(x);
@@ -198,6 +189,33 @@ void Player::MoveRight(float deltaTime)
 	// 상태 업데이트
 	isLeft = false;
 	state = PlayerState::IdleR;
+}
+
+void Player::MoveOnIce(float deltaTime)
+{
+	float moveDistance = moveSpeed * deltaTime;
+	
+	// 방향에 따라 이동
+	x = isLeft ? x - moveDistance : x + moveDistance;
+
+	// 좌표 검사
+	x = CheckXPosition(x);
+	
+	// position 벡터에 갱신
+	position.x = Util::FloatCastInt(x);
+}
+
+const float Player::CheckXPosition(float nowX)
+{
+	if (nowX < 0.0f)
+	{
+		nowX = 0.0f;
+	}
+	else if (Util::FloatCastInt(nowX) + width > Engine::Get().GetWidth())
+	{
+		nowX = static_cast<float>(Engine::Get().GetWidth() - 1);
+	}
+	return nowX;
 }
 
 void Player::JumpKeyDown(float deltaTime)
@@ -279,14 +297,9 @@ void Player::Jumping(float deltaTime)
 	y += velocityY * deltaTime;
 
 	// 좌표 처리
-	if (x < 0.0f)
-	{
-		x = 0.0f;
-	}
-	else if (Util::FloatCastInt(x) + width > Engine::Get().GetWidth())
-	{
-		x = static_cast<float>(Engine::Get().GetWidth() - 1);
-	}
+	x = CheckXPosition(x);
+
+	// position 벡터에 갱신
 	position.x = Util::FloatCastInt(x);
 
 	// Todo: 맵의 아래쪽으로 떨어지는 기믹이 필요할까?
@@ -414,7 +427,6 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 	{
 		// y축으로 더 적게 겹침 -> 상/하 충돌
 		// 다른 액터의 아래 좌표가 내 위 좌표보다 큰 경우 
-		// Todo: 반대인 원인 해결
 		if (yMin < otherYMax)
 		{
 			// 플레이어 기준 위에서 충돌
@@ -430,7 +442,7 @@ const Vector2 Player::TestIntersect(const Actor* const other)
 
 void Player::CrashedWithOther(const Vector2& crashedDirection, const Actor& other)
 {
-	// Todo: x, y 좌표 보정
+	// x, y 좌표 보정
 	x = static_cast<float>(position.x);
 	y = static_cast<float>(position.y);
 

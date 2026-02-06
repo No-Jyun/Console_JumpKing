@@ -2,6 +2,9 @@
 #include "Actor/Block.h"
 #include "Actor/Ground.h"
 #include "Actor/Player.h"
+#include "Actor/Grass.h"
+#include "Actor/Ice.h"
+#include "Actor/Spike.h"
 #include "Util/Util.h"
 
 #include <Windows.h>
@@ -121,13 +124,30 @@ void JumpLevel::LoadMap(const char* filename)
 		switch (mapCharacter)
 		{
 		case '#':
-		case '1':
 			AddNewActor(new Block(position));
 			break;
 
 		case '.':
 			AddNewActor(new Ground(position));
 			break;
+
+		case ',':
+			AddNewActor(new Grass(position));
+			break;
+
+		case '*':
+			AddNewActor(new Ice(position));
+			break;
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+			// Todo: 가시
+			// 가시 방향 인덱스 값 전달
+			AddNewActor(new Spike(position, mapCharacter - '0'));
+			break;
+
 
 		case 'p':
 			AddNewActor(new Player(position));
@@ -240,6 +260,16 @@ void JumpLevel::CheckGround()
 		if (playerFoot == groundTop)
 		{
 			player->UpdateIsLanding(true);
+
+			if (ground->IsTypeOf<Ice>())
+			{
+				player->UpdateIsOnIce(true);
+			}
+			else
+			{
+				player->UpdateIsOnIce(false);
+			}
+
 			return;
 		}
 	}

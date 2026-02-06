@@ -38,6 +38,9 @@ public:
 	// 추락 판단을 위해 플레이어 아래의 블럭여부를 업데이트하는 함수
 	void UpdateIsLanding(bool isLanding);
 
+	// 빙판길인지 업데이트하는 함수
+	inline void UpdateIsOnIce(bool isIce) { isOnIce = isIce; }
+
 	// 플레이어의 세부 좌표 Getter
 	inline const float GetXPosition() { return x; }
 	inline const float GetYposition() { return y; }
@@ -62,6 +65,7 @@ private:
 	// 점프를 하기위한 사전준비 함수
 	void Jump();
 
+	// 실제 점프 이동 함수
 	void Jumping(float deltaTime);
 
 	// 점프력을 구하는 함수
@@ -76,6 +80,12 @@ private:
 	// 오른쪽으로 이동하는 함수
 	void MoveRight(float deltaTime);
 
+	// 빙판길 위에서 자동으로 이동하는 함수
+	void MoveOnIce(float deltaTime);
+
+	// x좌표에 대해 좌표 검사를 하는 함수
+	const float CheckXPosition(float nowX);
+
 private:
 	// 좌우 구분 변수
 	bool isLeft = false;
@@ -88,6 +98,9 @@ private:
 
 	// 추락 중인지 판단하는 변수
 	bool isFalling = false;
+
+	// 빙판위인지 판단하는 변수
+	bool isOnIce = false;
 
 	// 플레이어가 점프키를 눌렀는지 판단하는 변수
 	bool isJumpKeyDown = false;

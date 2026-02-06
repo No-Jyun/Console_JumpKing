@@ -91,8 +91,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor\Block.cpp" />
+    <ClCompile Include="Actor\Grass.cpp" />
     <ClCompile Include="Actor\Ground.cpp" />
+    <ClCompile Include="Actor\Ice.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
+    <ClCompile Include="Actor\Spike.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Level\JumpLevel.cpp" />
     <ClCompile Include="Level\MenuLevel.cpp" />
@@ -101,8 +104,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Block.h" />
+    <ClInclude Include="Actor\Grass.h" />
     <ClInclude Include="Actor\Ground.h" />
+    <ClInclude Include="Actor\Ice.h" />
     <ClInclude Include="Actor\Player.h" />
+    <ClInclude Include="Actor\Spike.h" />
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Level\JumpLevel.h" />
     <ClInclude Include="Level\MenuLevel.h" />
