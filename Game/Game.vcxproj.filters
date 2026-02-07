@@ -33,25 +33,34 @@
     <ClCompile Include="Actor\Player.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Actor\Block.cpp">
+    <ClCompile Include="Actor\MapTile\Block.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Actor\Ground.cpp">
+    <ClCompile Include="Actor\MapTile\Ground.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Actor\Grass.cpp">
+    <ClCompile Include="Actor\MapTile\Grass.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Actor\Spike.cpp">
+    <ClCompile Include="Actor\MapTile\Spike.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Actor\Ice.cpp">
+    <ClCompile Include="Actor\MapTile\Ice.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Actor\PlayerDeadEffect.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Actor\Goal.cpp">
+    <ClCompile Include="Actor\MapTile\UpwardGoal.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\MapTile\UpwardSpawn.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\MapTile\DownwardGoal.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor\MapTile\DownwardSpawn.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,25 +80,34 @@
     <ClInclude Include="Actor\Player.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\Block.h">
+    <ClInclude Include="Actor\MapTile\Block.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\Ground.h">
+    <ClInclude Include="Actor\MapTile\Ground.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\Grass.h">
+    <ClInclude Include="Actor\MapTile\Grass.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\Spike.h">
+    <ClInclude Include="Actor\MapTile\Spike.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\Ice.h">
+    <ClInclude Include="Actor\MapTile\Ice.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Actor\PlayerDeadEffect.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\Goal.h">
+    <ClInclude Include="Actor\MapTile\UpwardGoal.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\MapTile\UpwardSpawn.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\MapTile\DownwardGoal.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\MapTile\DownwardSpawn.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

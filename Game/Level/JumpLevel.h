@@ -30,6 +30,9 @@ class JumpLevel : public Level
 		// 통과한 지점의 인덱스
 		int goalIndex = 0;
 
+		// 윗 스테이지를 향하는지 판단하는 변수
+		bool isUpward = true;
+
 		// 통과했을때 x좌표 속도
 		float velocityX = 0.0f;
 
@@ -38,16 +41,30 @@ class JumpLevel : public Level
 
 		// 플레이어의 상태 변수 저장
 		// 좌우 구분 변수
-		int isLeft = 0;
+		bool isLeft = false;
 
 		// 바닥에 있는지 판단하는 변수
-		int isLanding = 1;
+		bool isLanding = true;
 
 		// 점프 중인지 판단하는 변수
-		int isJumping = 0;
+		bool isJumping = false;
 
 		// 추락 중인지 판단하는 변수
-		int isFalling = 0;
+		bool isFalling = false;
+
+		// 데이터 초기화 함수
+		void Clear()
+		{
+			isSaved = false;
+			goalIndex = 0;
+			isUpward = true;
+			velocityX = 0.0f;
+			velocityY = 0.0f;
+			isLeft = false;
+			isLanding = true;
+			isJumping = false;
+			isFalling = false;
+		}
 	};
 
 public:
@@ -56,17 +73,11 @@ public:
 	virtual void Tick(float deltaTime) override;
 
 private:
-	// 처음 시작시 스테이지를 로드하는 함수
+	// 스테이지를 로드하는 함수
 	void LoadStage(const char* filename);
 
-	// 플레이어가 다음 스테이지 통로에 도달했을때 처리하는 함수
-	void PlayerGotoNextStage();
-
-	// 플레이어가 이전 스테이지 통로에 도달했을때 처리하는 함수
-	void PlayerGotoPreviousStage();
-
-	// 플레이어가 맵의 경계를 지나, 새로운 스테이지를 로드하는 함수
-	void LoadNextStage(const char* filename);
+	// 플레이어가 다음/이전 스테이지 통로에 도달했을때 처리하는 함수
+	void PlayerGotoStage();
 
 	// 플레이어가 맵의 경계를 지나면 플레이어의 상태 저장하는 함수
 	void SavePlayerData(const int goalIndex);
@@ -74,17 +85,22 @@ private:
 	// 새로운 스테이지 입장시 플레이어의 상태를 로드하는 함수
 	void LoadPlayerData();
 
+	// 스테이지 로드시 레벨을 정리하는 함수
+	void ClearLevel();
+
 	// 게임 클리어 확인 함수
 	void CheckGameClear();
 
 	// 충돌 판정 처리 함수
 	// Todo: 탄환과 충돌
 	void ProcessCollisionPlayerAndOther();
-	// Todo: 가시와 충돌
 	//void ProcessCollisionPlayerAndSpike();
 
 	// 플레이어의 발판을 확인하는 함수
 	void CheckGround();
+
+	// 충돌을 무시할 액터인지 판단하는 함수
+	bool IsCollisionSkipped(Actor* const other);
 
 	// 플레이어 리스폰 함수
 	void RespawnPlayer();
@@ -114,8 +130,11 @@ private:
 	// 맵 이동시 저장되고 로드할 플레이어 데이터
 	PlayerData playerData;
 
-	// 플레이어 생성 위치 (플레이어 리스폰 위해 생성시 저장)
+	// 플레이어 생성 위치
 	Vector2 playerSpawnPosition;
+
+	// 플레이어 재생성 위치 (플레이어 리스폰 위해 생성시 저장)
+	Vector2 playerRespawnPosition;
 
 	// 플레이어 리스폰 대기시간
 	const float playerRepawnTime = 1.5f;

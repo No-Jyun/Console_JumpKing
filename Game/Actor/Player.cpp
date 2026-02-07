@@ -5,7 +5,6 @@
 #include "Level/Level.h"
 #include "Actor/PlayerDeadEffect.h"
 #include "Game/Game.h"
-#include "Actor/Goal.h"
 
 Player::Player(const Vector2& position)
 	: super("b", position, Color::Green), state(PlayerState::IdleR)

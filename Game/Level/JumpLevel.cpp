@@ -1,14 +1,18 @@
 #include "JumpLevel.h"
-#include "Actor/Block.h"
-#include "Actor/Ground.h"
+#include "Actor/MapTile/Block.h"
+#include "Actor/MapTile/Ground.h"
+#include "Actor/MapTile/Grass.h"
+#include "Actor/MapTile/Ice.h"
+#include "Actor/MapTile/Spike.h"
+#include "Actor/MapTile/UpwardGoal.h"
+#include "Actor/MapTile/UpwardSpawn.h"
+#include "Actor/MapTile/DownwardGoal.h"
+#include"Actor/MapTile/DownwardSpawn.h"
 #include "Actor/Player.h"
-#include "Actor/Grass.h"
-#include "Actor/Ice.h"
-#include "Actor/Spike.h"
 #include "Util/Util.h"
 #include "Core/Input.h"
 #include "Game/Game.h"
-#include "Actor/Goal.h"
+#include "Render/Renderer.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -16,22 +20,29 @@
 /*
 # : 화면 테두리
 . : 바닥
+, : 풀
 p : 플레이어
+* : 얼음
+0,1,2,3 : 가시 (방향)
+u : 위 스테이지를 향하는 블럭
+i : 아래 스테이지에서 위로 올라올때 생생될 위치
+d : 아래 스테이지를 향하는 블럭
+f : 위 스테이지에서 아래로 내려올때 생성될 위치
 */
 
 // 스테이지를 로드하기 위한 문자열
 static const char* stage[] =
 {
 	" ",
-	"Stage1.txt"
-	//"Stage2.txt"
+	"Stage1.txt",
+	"Stage2.txt"
 };
 
 JumpLevel::JumpLevel(const int stageIndex)
 	: playerSpawnPosition(Vector2::Zero), currentStageNum(stageIndex)
 {
 	// stageIndex에 맞는 stage 로드
-	LoadStage(stage[stageIndex]);
+	LoadStage(stage[currentStageNum]);
 
 	// 리스폰 타이머 설정
 	playerRespawnTimer.SetTargetTime(playerRepawnTime);
@@ -77,13 +88,10 @@ void JumpLevel::Tick(float deltaTime)
 	// 발판 확인 
 	CheckGround();
 
-	if (state == LevelState::NextLevel)
+	// 현재 레벨 상태에 따라 스테이지 변동
+	if (state != LevelState::None)
 	{
-		PlayerGotoNextStage();		
-	}
-	else if (state == LevelState::PreviousLevel)
-	{
-		// Todo: 이전 스테이지로 
+		PlayerGotoStage();
 	}
 
 	// Draw 필요??
@@ -138,6 +146,9 @@ void JumpLevel::LoadStage(const char* filename)
 	// 객체를 생성할 위치 값
 	Vector2 position;
 
+	// 스테이지 통과시 플레이어가 생성될 위치를 찾기위한 인덱스
+	int goalIndex = 0;
+
 	while (true)
 	{
 		// 종료 조건
@@ -163,7 +174,14 @@ void JumpLevel::LoadStage(const char* filename)
 		/*
 		# : 화면 테두리
 		. : 바닥
+		, : 풀
 		p : 플레이어
+		* : 얼음
+		0,1,2,3 : 가시 (방향)
+		u : 위 스테이지를 향하는 블럭
+		i : 아래 스테이지에서 위로 올라올때 생생될 위치
+		d : 아래 스테이지를 향하는 블럭
+		f : 위 스테이지에서 아래로 내려올때 생성될 위치
 		*/
 		// 한 문자씩 처리
 		switch (mapCharacter)
@@ -196,28 +214,89 @@ void JumpLevel::LoadStage(const char* filename)
 			AddNewActor(new Spike(position, mapCharacter - '0'));
 			break;
 
-		case 'g':
-			// 목적지 타일 생성
-			Goal * goal = new Goal(position);
+		case 'u':
+		{
+			// 위 스테이지로 향하는 타일 생성
+			UpwardGoal* goal = new UpwardGoal(position);
 			AddNewActor(goal);
 
 			// 배열에 저장
 			upwardGoal.emplace_back(goal);
 			break;
+		}
+
+		case 'i':
+			// 플레이어가 스테이지를 통과하여 맵이 로딩되는 경우
+			if (playerData.isSaved)
+			{
+				// 윗 스테이지를 향한다면
+				if (playerData.isUpward)
+				{
+					// 현재 생성할 생성위치가 통과한 위치와 같다면
+					if (playerData.goalIndex == goalIndex)
+					{
+						// 플레이어 생성 위치 설정
+						playerSpawnPosition = position;
+					}
+					goalIndex++;
+				}
+			}
+
+			// 위 스테이지 생성위치 생성
+			AddNewActor(new UpwardSpawn(position));
+			break;
+
+		case 'd':
+		{
+			// 아래 스테이지로 향하는 타일 생성
+			DownwardGoal* goal = new DownwardGoal(position);
+			AddNewActor(goal);
+
+			// 배열에 저장
+			downwardGoal.emplace_back(goal);
+			break;
+		}
+
+		case 'f':
+			// 플레이어가 스테이지를 통과하여 맵이 로딩되는 경우
+			if (playerData.isSaved)
+			{
+				// 아래 스테이지를 향한다면
+				if (!playerData.isUpward)
+				{
+					// 현재 생성할 생성위치가 통과한 위치와 같다면
+					if (playerData.goalIndex == goalIndex)
+					{
+						// 플레이어 생성 위치 설정
+						playerSpawnPosition = position;
+					}
+					goalIndex++;
+				}
+			}
+
+			// 아래 스테이지 생성위치 생성
+			AddNewActor(new DownwardSpawn(position));
+			break;
 
 		case 'p':
-			// 맵 로드시 플레이어 생성 위치 초기화
-			playerSpawnPosition = position;
+			// 플레이어 데이터가 저장되지 않았다면
+			if (!playerData.isSaved)
+			{
+				// 맵 로드시 플레이어 생성 위치 초기화
+				playerSpawnPosition = position;
+			}
 
-			// 플레이어 생성
-			player = new Player(position);
-			AddNewActor(player);
-			break;
+			// 맵 로드시 p 가 존재한다면 1스테이지라는 의미이므로 리스폰 위치 설정
+			playerRespawnPosition = position;
 		}
 
 		// x 좌표 증가 처리
 		position.x++;
 	}
+
+	// 플레이어 생성
+	player = new Player(playerSpawnPosition);
+	AddNewActor(player);
 
 	// 사용한 버퍼 해제
 	delete[] data;
@@ -226,9 +305,52 @@ void JumpLevel::LoadStage(const char* filename)
 	fclose(file);
 }
 
-void JumpLevel::PlayerGotoNextStage()
+void JumpLevel::PlayerGotoStage()
 {
-	// 현재 맵에 그려진거 지우기
+	// 스테이지 변동
+	currentStageNum += static_cast<int>(state);
+
+	// 현재 맵 정리
+	ClearLevel();
+
+	// 새로운 맵 로드
+	LoadStage(stage[currentStageNum]);
+
+	// 플레이어 상태 로드
+	LoadPlayerData();
+}
+
+void JumpLevel::SavePlayerData(const int goalIndex)
+{
+	// 플레이어 상태 저장
+	// isSaved가 켜졌다면 앞으로 플레이어를 생성시 로드해야함
+	playerData.isSaved = true;
+	playerData.isUpward = state == LevelState::NextLevel;
+
+	playerData.goalIndex = goalIndex;
+	playerData.velocityX = player->velocityX;
+	playerData.velocityY = player->velocityY;
+	playerData.isLeft = player->isLeft;
+	playerData.isLanding = player->isLanding;
+	playerData.isJumping = player->isJumping;
+	playerData.isFalling = player->isFalling;
+}
+
+void JumpLevel::LoadPlayerData()
+{
+	player->velocityX = playerData.velocityX;
+	player->velocityY = playerData.velocityY;
+	player->isLeft = playerData.isLeft;
+	player->isLanding = playerData.isLanding;
+	player->isJumping = playerData.isJumping;
+	player->isFalling = playerData.isFalling;
+
+	// 플레이어 데이터 초기화
+	playerData.Clear();
+}
+
+void JumpLevel::ClearLevel()
+{
 	// 메모리 정리
 	for (Actor*& actor : actors)
 	{
@@ -242,50 +364,38 @@ void JumpLevel::PlayerGotoNextStage()
 	// 배열 초기화
 	actors.clear();
 
-	//system("cls");
-
-	// 스테이지 변동
-	currentStageNum += static_cast<int>(state);
-
 	// 레벨 관련 변수 초기화
+	isPlayerDead = false;
+	isGameClear = false;
 	state = LevelState::None;
 	upwardGoal.clear();
 	downwardGoal.clear();
 	player = nullptr;
-
-	// 새로운 맵 로드
-	// Todo: 여기부터 시작
-	// 플레이어 생성 및 상태 로드
 }
 
-void JumpLevel::PlayerGotoPreviousStage()
+void JumpLevel::RespawnPlayer()
 {
+	// 1스테이지에서 사망했다면 플레이어 생성만
+	if (currentStageNum == 1)
+	{
+		player = new Player(playerSpawnPosition);
+		AddNewActor(player);
+		return;
+	}
+
+	// 스테이지 인덱스 초기화
+	currentStageNum = 1;
+
+	// 플레이어 데이터 초기화
+	playerData.Clear();
+
+	// 현재 맵 정리
+	ClearLevel();
+
+	// 스테이지 1 로드
+	LoadStage(stage[currentStageNum]);
 }
 
-void JumpLevel::LoadNextStage(const char* filename)
-{
-
-}
-
-void JumpLevel::SavePlayerData(const int goalIndex)
-{
-	// 플레이어 상태 저장
-	// isSaved가 켜졌다면 앞으로 플레이어를 생성시 로드해야함
-	playerData.isSaved = true;
-
-	playerData.goalIndex = goalIndex;
-	playerData.velocityX = player->velocityX;
-	playerData.velocityY = player->velocityY;
-	playerData.isLeft = player->isLeft;
-	playerData.isLanding = player->isLanding;
-	playerData.isJumping = player->isJumping;
-	playerData.isFalling = player->isFalling;	
-}
-
-void JumpLevel::LoadPlayerData()
-{
-	
-}
 
 void JumpLevel::CheckGameClear()
 {
@@ -294,31 +404,35 @@ void JumpLevel::CheckGameClear()
 
 void JumpLevel::ProcessCollisionPlayerAndOther()
 {
+	// 플레이어가 없다면 리턴
 	if (!player)
 	{
 		return;
 	}
 
-	// 액터 필터링을 위한 변수.
+	// 액터 필터링을 위한 변수
 	std::vector<Actor*> others;
 
-	// 액터 필터링.
+	// 액터 필터링
 	for (Actor* const actor : actors)
 	{
-		// 맵 경계와 플레이어를 제외한 액터 배열에 추가
-		if (actor != player && !actor->IsTypeOf<Block>())
+		// 현재 액터가 충돌하지 않을 액터 또는 플레이어라면 스킵
+		if (IsCollisionSkipped(actor) || actor == player)
 		{
-			others.emplace_back(actor);
+			continue;
 		}
+
+		// 배열에 추가
+		others.emplace_back(actor);
 	}
 
-	// 판정 처리 안해도 되는지 확인.
+	// 판정 처리 안해도 되는지 확인
 	if (others.size() == 0)
 	{
 		return;
 	}
 
-	// 충돌 판정.
+	// 충돌 판정
 	for (Actor* const actor : others)
 	{
 		// 충돌 검사
@@ -330,8 +444,8 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 			continue;
 		}
 
-		// 충돌한 액터가 목적지라면 다음 스테이지 로드
-		if (actor->IsTypeOf<Goal>())
+		// 충돌한 액터가 다음 스테이지로 이동하는 통로라면 다음 스테이지 로드
+		if (actor->IsTypeOf<UpwardGoal>())
 		{
 			// 다음 레벨로 가도록 레벨 상태 저장
 			state = LevelState::NextLevel;
@@ -350,8 +464,8 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 		}
 
 		// 충돌한 액터가 가시라면 사망처리
-		// Todo: 스테이지 1로 돌아가서 리스폰
-		if (actor->IsTypeOf<Spike>())
+		// 스테이지 1로 돌아가서 리스폰
+		else if (actor->IsTypeOf<Spike>())
 		{
 			// 플레이어 죽음 설정
 			isPlayerDead = true;
@@ -373,35 +487,45 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 
 void JumpLevel::CheckGround()
 {
+	// 플레이어가 없다면 리턴
 	if (!player)
 	{
 		return;
 	}
 
-	// 액터 필터링을 위한 변수.
-	std::vector<Actor*> grounds;
+	// 액터 필터링을 위한 변수
+	std::vector<Actor*> others;
 
-	// 액터 필터링.
+	// 액터 필터링
 	for (Actor* const actor : actors)
 	{
-		// 맵 경계와 플레이어를 제외한 액터 배열에 추가
-		if (actor != player && !actor->IsTypeOf<Block>())
+		// 현재 액터가 충돌하지 않을 액터 또는 플레이어라면 스킵
+		if (IsCollisionSkipped(actor) || actor == player)
 		{
-			grounds.emplace_back(actor);
+			continue;
 		}
+
+		// 배열에 추가
+		others.emplace_back(actor);
 	}
 
-	// 판정 처리 안해도 되는지 확인.
-	if (grounds.size() == 0)
+	// 판정 처리 안해도 되는지 확인
+	if (others.size() == 0)
 	{
 		return;
 	}
 
-	// 발판 판정.
-	for (Actor* const ground : grounds)
+	// 발판 판정
+	for (Actor* const other : others)
 	{
 		// x좌표가 같지 않은 액터 넘기기
-		if (player->GetPosition().x != ground->GetPosition().x)
+		if (player->GetPosition().x != other->GetPosition().x)
+		{
+			continue;
+		}
+
+		// 플레이어의 머리 위 액터 넘기기
+		if (player->GetYposition() >= static_cast<float>(other->GetPosition().y + 1))
 		{
 			continue;
 		}
@@ -409,25 +533,50 @@ void JumpLevel::CheckGround()
 		// 플레이어 아래의 발판 검사
 		// 플레이어의 높이가 1이므로 1을 더한다
 		float playerFoot = player->GetYposition() + 1.0f;
-		float groundTop = Util::FloatCastInt(ground->GetPosition().y);
+		float otherTop = static_cast<float>(other->GetPosition().y);
 
-		// 플레이어가 한칸 내려간다면 겹치는 여부 판단 
-		if (playerFoot == groundTop)
+		//const float EPSILON = 0.00005f;
+
+		// 플레이어의 발이 다른 액터의 상단부와 겹치는 여부 판단 
+		if (playerFoot >= otherTop)
 		{
+			// 충돌한(아래에 있는) 액터가 아래 스테이지로 이동하는 통로라면 이전 스테이지 로드
+			if (other->IsTypeOf<DownwardGoal>())
+			{
+				// 다음 레벨로 가도록 레벨 상태 저장
+				state = LevelState::PreviousLevel;
+
+				// 통과한 목적지의 인덱스 찾기
+				int goalIndex = 0;
+				while (downwardGoal[goalIndex] != other)
+				{
+					goalIndex++;
+				}
+
+				// 플레이어 상태 저장
+				SavePlayerData(goalIndex);
+
+				return;
+			}
+
+			// 플레이어 착륙
 			player->UpdateIsLanding(true);
 
 			// 얼음을 밟은 경우
-			if (ground->IsTypeOf<Ice>())
+			if (other->IsTypeOf<Ice>())
 			{
+				// 얼음을 밟았다고 알림
 				player->UpdateIsOnIce(true);
 			}
 			else
 			{
+				// 얼음을 밟지 않았다고 알림
 				player->UpdateIsOnIce(false);
 			}
 
 			// 가시를 밟은 경우
-			if (ground->IsTypeOf<Spike>())
+			// 스테이지 1로 돌아가서 리스폰
+			if (other->IsTypeOf<Spike>())
 			{
 				// 플레이어 죽음 설정
 				isPlayerDead = true;
@@ -448,8 +597,24 @@ void JumpLevel::CheckGround()
 	player->UpdateIsLanding(false);
 }
 
-void JumpLevel::RespawnPlayer()
+bool JumpLevel::IsCollisionSkipped(Actor* const other)
 {
-	player = new Player(playerSpawnPosition);
-	AddNewActor(player);
+	// 위 스테이지 생성 위치 타일 액터라면 충돌 X
+	if (other->IsTypeOf<UpwardSpawn>())
+	{
+		return true;
+	}
+	// 아래 스테이지 생성 위치 타일 액터라면 충돌 X
+	if (other->IsTypeOf<DownwardSpawn>())
+	{
+		return true;
+	}
+	// 맵 경계 타일 액터라면 충돌 X
+	if (other->IsTypeOf<Block>())
+	{
+		return true;
+	}
+
+	// 그 외는 충돌 검사 필요
+	return false;
 }

@@ -90,14 +90,17 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Actor\Block.cpp" />
-    <ClCompile Include="Actor\Goal.cpp" />
-    <ClCompile Include="Actor\Grass.cpp" />
-    <ClCompile Include="Actor\Ground.cpp" />
-    <ClCompile Include="Actor\Ice.cpp" />
+    <ClCompile Include="Actor\MapTile\DownwardGoal.cpp" />
+    <ClCompile Include="Actor\MapTile\Block.cpp" />
+    <ClCompile Include="Actor\MapTile\DownwardSpawn.cpp" />
+    <ClCompile Include="Actor\MapTile\UpwardGoal.cpp" />
+    <ClCompile Include="Actor\MapTile\Grass.cpp" />
+    <ClCompile Include="Actor\MapTile\Ground.cpp" />
+    <ClCompile Include="Actor\MapTile\Ice.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\PlayerDeadEffect.cpp" />
-    <ClCompile Include="Actor\Spike.cpp" />
+    <ClCompile Include="Actor\MapTile\Spike.cpp" />
+    <ClCompile Include="Actor\MapTile\UpwardSpawn.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Level\JumpLevel.cpp" />
     <ClCompile Include="Level\PauseMenuLevel.cpp" />
@@ -105,14 +108,17 @@
     <ClCompile Include="Util\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Actor\Block.h" />
-    <ClInclude Include="Actor\Goal.h" />
-    <ClInclude Include="Actor\Grass.h" />
-    <ClInclude Include="Actor\Ground.h" />
-    <ClInclude Include="Actor\Ice.h" />
+    <ClInclude Include="Actor\MapTile\DownwardGoal.h" />
+    <ClInclude Include="Actor\MapTile\Block.h" />
+    <ClInclude Include="Actor\MapTile\DownwardSpawn.h" />
+    <ClInclude Include="Actor\MapTile\UpwardGoal.h" />
+    <ClInclude Include="Actor\MapTile\Grass.h" />
+    <ClInclude Include="Actor\MapTile\Ground.h" />
+    <ClInclude Include="Actor\MapTile\Ice.h" />
     <ClInclude Include="Actor\Player.h" />
     <ClInclude Include="Actor\PlayerDeadEffect.h" />
-    <ClInclude Include="Actor\Spike.h" />
+    <ClInclude Include="Actor\MapTile\Spike.h" />
+    <ClInclude Include="Actor\MapTile\UpwardSpawn.h" />
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Level\JumpLevel.h" />
     <ClInclude Include="Level\PauseMenuLevel.h" />
