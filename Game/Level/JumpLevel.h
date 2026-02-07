@@ -141,5 +141,8 @@ private:
 
 	// 플레이어 리스폰 타이머
 	Timer playerRespawnTimer;
+
+	// 콘솔 중앙에 오도록 그릴 위치
+	Vector2 drawPosition;
 };
 

@@ -28,6 +28,16 @@ namespace Wanted
 			__debugbreak();
 		}
 
+		//ChangeFontSize(2);
+
+		// 버퍼 크기 설정 (콘솔 전체 공간 크기)
+		// Screen Buffer: 실제 텍스트가 저장되는 전체 2D 공간
+		if (!SetConsoleScreenBufferSize(buffer, screenSize))
+		{
+			std::cerr << "Failed to set console buffer size\n";
+			__debugbreak();
+		}
+
 		// 버퍼 생성 후에는 크기 지정 (현재 화면에 보이는 창 크기)
 		// Console Window: 그중 일부를 "카메라처럼" 보여주는 창
 		SMALL_RECT rect;
@@ -41,15 +51,7 @@ namespace Wanted
 			//DWORD errorCode = GetLastError();
 			std::cerr << "Failed to set console window info\n";
 			__debugbreak();
-		}
-		
-		// 버퍼 크기 설정 (콘솔 전체 공간 크기)
-		// Screen Buffer: 실제 텍스트가 저장되는 전체 2D 공간
-		if (!SetConsoleScreenBufferSize(buffer, screenSize))
-		{
-			std::cerr << "Failed to set console buffer size\n";
-			__debugbreak();
-		}
+		}		
 
 		// 커서 끄기
 		CONSOLE_CURSOR_INFO info;
@@ -58,6 +60,8 @@ namespace Wanted
 		//끄도록 설정
 		info.bVisible = false;
 		SetConsoleCursorInfo(buffer, &info);
+
+		//ChangeFontSize(2.0f);
 	}
 
 	ScreenBuffer::~ScreenBuffer()
@@ -102,5 +106,19 @@ namespace Wanted
 			Vector2::Zero,
 			&writeRegion
 		);
+	}
+	void ScreenBuffer::ChangeFontSize(const SHORT fontSize)
+	{
+		// 현재 폰트 정보 가져오기
+		CONSOLE_FONT_INFOEX fontInfo;
+		fontInfo.cbSize = sizeof(CONSOLE_FONT_INFOEX);
+		GetCurrentConsoleFontEx(buffer, FALSE, &fontInfo);
+
+		// 폰트 크기 변경
+		fontInfo.dwFontSize.X = static_cast<SHORT>(fontSize);
+		fontInfo.dwFontSize.Y = static_cast<SHORT>(fontSize);
+
+		// 적용
+		SetCurrentConsoleFontEx(buffer, FALSE, &fontInfo);
 	}
 }

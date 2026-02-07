@@ -209,6 +209,15 @@ namespace Wanted
 		Present();
 	}
 
+	void Renderer::AdjustResolution(const SHORT fontSize)
+	{
+		// 모든 버퍼의 폰트 크기 조절
+		for (ScreenBuffer* buffer : screenBuffers)
+		{
+			buffer->ChangeFontSize(fontSize);
+		}
+	}
+
 	void Renderer::Present()
 	{
 		// 버퍼 교환

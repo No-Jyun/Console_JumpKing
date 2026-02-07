@@ -64,6 +64,9 @@ namespace Wanted
 		// 즉시 화면에 표시할 내용 (ex. 사망처리)
 		void PresentImmediately();
 
+		// 콘솔창의 해상도를 조절하는 함수
+		void AdjustResolution(const SHORT fontSize);
+
 		// 싱글톤 접근 함수
 		static Renderer& Get();
 

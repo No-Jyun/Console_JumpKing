@@ -41,6 +41,9 @@ static const char* stage[] =
 JumpLevel::JumpLevel(const int stageIndex)
 	: playerSpawnPosition(Vector2::Zero), currentStageNum(stageIndex)
 {
+	// 메인 화면의 폰트 크기 조절
+	fontSize = 15;
+
 	// stageIndex에 맞는 stage 로드
 	LoadStage(stage[currentStageNum]);
 
@@ -57,7 +60,7 @@ void JumpLevel::Tick(float deltaTime)
 	if (Input::Get().GetKeyDown(VK_ESCAPE))
 	{
 		// 메뉴 토글
-		Game::Get().ToggleMenu();
+		Game::Get().ToggleMenu(LevelControl::PauseMenu);
 		return;
 	}
 
@@ -101,9 +104,9 @@ void JumpLevel::Tick(float deltaTime)
 void JumpLevel::LoadStage(const char* filename)
 {
 	// 파일 로드
-	// 최종 파일 경로 만들기 ("../Assets/filename")
+	// 최종 파일 경로 만들기 ("../Assets/Stage/filename")
 	char path[2048] = { };
-	sprintf_s(path, 2048, "../Assets/%s", filename);
+	sprintf_s(path, 2048, "../Assets/Stage/%s", filename);
 
 	// 파일 열기
 	FILE* file = nullptr;
@@ -143,8 +146,55 @@ void JumpLevel::LoadStage(const char* filename)
 	// 인덱스를 사용해 한 문자씩 읽기
 	int index = 0;
 
+	// 엔진의 중앙으로 그릴 위치 설정
+	drawPosition.x = Engine::Get().GetWidth() / 2;
+	drawPosition.y = Engine::Get().GetHeight() / 2;
+
+	int mapWidth = 0;
+	int mapHeight = 0;
+
+	// 너비 저장할 변수 선언
+	int x = 0;
+
+	// 맵 크기 측정을 위한 반복문
+	while (true)
+	{
+		// 종료 조건
+		if (index >= fileSize)
+		{
+			break;
+		}
+
+		// 캐릭터 읽기
+		char mapCharacter = data[index];
+		index++;
+		x++;
+
+		// 개행 문자가 나오면 높이 증가
+		if (mapCharacter == '\n')
+		{
+			// 너비 갱신
+			mapWidth = mapWidth > x ? mapWidth : x;
+
+			// y좌표는 하나 늘리고, x좌표 초기화
+			x = 0;
+
+			// 높이 증가
+			mapHeight++;
+
+			continue;
+		}
+	}
+
+	// 맵이 콘솔의 중앙에 오도록 정렬
+	drawPosition.x -= mapWidth / 2;
+	drawPosition.y -= mapHeight / 2;
+
+	// 처음으로 돌아가 다시 맵 읽기
+	index = 0;
+
 	// 객체를 생성할 위치 값
-	Vector2 position;
+	Vector2 position = drawPosition;
 
 	// 스테이지 통과시 플레이어가 생성될 위치를 찾기위한 인덱스
 	int goalIndex = 0;
@@ -165,7 +215,7 @@ void JumpLevel::LoadStage(const char* filename)
 		if (mapCharacter == '\n')
 		{
 			// y좌표는 하나 늘리고, x좌표 초기화
-			position.x = 0;
+			position.x = drawPosition.x;
 			position.y++;
 
 			continue;
@@ -395,7 +445,6 @@ void JumpLevel::RespawnPlayer()
 	// 스테이지 1 로드
 	LoadStage(stage[currentStageNum]);
 }
-
 
 void JumpLevel::CheckGameClear()
 {

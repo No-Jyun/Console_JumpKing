@@ -23,22 +23,25 @@ PauseMenuLevel::PauseMenuLevel()
 {
 	// 메뉴 아이템 생성
 	items.emplace_back(new MenuItem(
-		"Resume Game",
+		"   Resume Game   ",
 		[]() 
 		{
 			// 메뉴 토글 함수 호출
-			Game::Get().ToggleMenu();
+			Game::Get().ToggleMenu(LevelControl::GameMenu);
 		}
 	));
 
 	items.emplace_back(new MenuItem(
-		" Quit Game ",
+		"Back to Main Menu",
 		[]()
 		{
-			// 게임 종료
-			Game::Get().QuitEngine();
+			// 메뉴 토글 함수 호출
+			Game::Get().ToggleMenu(LevelControl::MainMenu);
 		}
 	));
+
+	// 메인 화면의 폰트 크기 조절
+	fontSize = 15;
 
 	// 배열 크기 초기화
 	size_t arrayLength = sizeof(menuLogo) / sizeof(menuLogo[0]);
@@ -85,19 +88,12 @@ void PauseMenuLevel::Tick(float deltaTime)
 		// 메뉴 아이템이 저장한 함수 포인터 호출
 		items[currentIndex]->onSelected();
 	}
-
-	if (Input::Get().GetKeyDown(VK_ESCAPE))
-	{
-		// 메뉴 토글
-		Game::Get().ToggleMenu();
-
-		// 인덱스 초기화
-		currentIndex = 0;
-	}
 }
 
 void PauseMenuLevel::Draw()
 {
+	super::Draw();
+
 	// 로고 출력
 	DrawLogo();
 
@@ -110,7 +106,6 @@ void PauseMenuLevel::SetVectorPosition()
 	// 기본 값으로 초기화
 	consoleCenter = Vector2::Zero;
 	logoPosition = Vector2::Zero;
-	itemPosition = Vector2::Zero;
 
 	// 콘솔의 정중앙 설정
 	consoleCenter.x = Engine::Get().GetWidth() / 2;
@@ -155,18 +150,18 @@ void PauseMenuLevel::DrawLogo()
 
 void PauseMenuLevel::DrawItem()
 {
-	for (int ix = 0; ix < static_cast<int>(items.size()); ix++)
+	for (int i = 0; i < static_cast<int>(items.size()); i++)
 	{
 		// 메뉴 아이템을 그리기로 정한 위치에서
 		Vector2 drawPosition = itemPosition;
 
 		// y값을 증가시켜 아래로 한칸씩 그리기
-		drawPosition.y += ix;
+		drawPosition.y += i;
 
 		// 아이템 색상 확인 (선택됐는지 여부)
 		Color textColor =
-			(ix == currentIndex) ? selectedColor : unselectedColor;
+			(i == currentIndex) ? selectedColor : unselectedColor;
 
-		Renderer::Get().Submit(items[ix]->text, drawPosition, textColor);
+		Renderer::Get().Submit(items[i]->text, drawPosition, textColor);
 	}
 }

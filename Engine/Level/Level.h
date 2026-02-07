@@ -4,6 +4,7 @@
 // 크기가 알아서 변경되는 배열
 #include <vector>
 #include "Common/RTTI.h"
+#include "Render/Renderer.h"
 
 namespace Wanted
 {
@@ -25,6 +26,9 @@ namespace Wanted
 		virtual void Tick(float deltaTime);
 		virtual void Draw();
 
+		// 각 레벨에 맞는 폰트 크기로 변경하는 함수
+		inline void SetLevelFontSize() { Renderer::Get().AdjustResolution(static_cast<SHORT>(fontSize)); }
+
 		// 액터 추가 함수
 		void AddNewActor(Actor* newActor);
 
@@ -37,5 +41,8 @@ namespace Wanted
 		
 		// 실행 중에 추가 요청된 액터의 배열
 		std::vector<Actor*> addRequestedActors;
+
+		// 각 레벨에 맞는 폰트 크기
+		int fontSize = 0;
 	};
 }

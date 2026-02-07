@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "Level/PauseMenuLevel.h"
 #include "Level/JumpLevel.h"
+#include "Level/MainMenuLevel.h"
+#include "Render/Renderer.h"
 
 #include <iostream>
 
@@ -11,15 +13,17 @@ Game::Game()
 {
 	instance = this;
 
-	// 두 레벨 생성 및 배열에 추가
+	// 세가지 레벨 생성 및 배열에 추가
+	levels.emplace_back(new MainMenuLevel());
 	levels.emplace_back(new JumpLevel(1));
 	levels.emplace_back(new PauseMenuLevel());
 
 	// 시작 상태(레벨) 설정
-	state = State::GamePlay;
+	state = LevelControl::MainMenu;
 
 	// 게임 시작 시 활성화할 레벨 설정
 	mainLevel = levels[0];
+	mainLevel->SetLevelFontSize();
 }
 
 Game::~Game()
@@ -38,23 +42,19 @@ Game::~Game()
 	levels.clear();
 }
 
-void Game::ToggleMenu()
+void Game::ToggleMenu(LevelControl levelControl)
 {
 	// 화면 지우기
 	// system 은 콘솔 명령어 실행 함수. "cls" 명령어 실행
 	// cls -> clear screen
 	system("cls");
 
-	// 변경할 인덱스 계산
-	// 현재 활성 레벨 인덱스가 1이면 -> 0으로
-	// 현재 활성 레벨 인덱스가 0이면 -> 1으로
-	// 마법의 공식 - (1-x) -> OneMinus
-	int stateIndex = (int)state;	// static_cast
-	int nextState = 1 - stateIndex;	// one - x
-	state = (State)nextState;		// static_cast
+	// 전달받은 레벨로 상태 변경
+	state = levelControl;
 
 	// 메인 레벨 변경
 	mainLevel = levels[static_cast<int>(state)];
+	mainLevel->SetLevelFontSize();
 }
 
 Game& Game::Get()

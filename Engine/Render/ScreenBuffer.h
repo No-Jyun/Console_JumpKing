@@ -24,6 +24,9 @@ namespace Wanted
 		// 콘솔에 2차원 글자 배열을 그릴 때 사용하는 함수
 		void Draw(CHAR_INFO* charInfo);
 
+		// 콘솔의 글자 크기를 줄이는 함수 (해상도 조절 함수)
+		void ChangeFontSize(const SHORT fontSize);
+
 		// 버퍼 반환 Getter
 		inline HANDLE GetBuffer() const { return buffer; }
 
