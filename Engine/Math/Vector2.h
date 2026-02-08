@@ -22,6 +22,9 @@ namespace Wanted
 		bool operator==(const Vector2& other) const;
 		bool operator!=(const Vector2& other) const;
 
+		// 탄환의 각도를 계산하기 위한 내적 함수
+		const float Dot(const float otherX, const float otherY) const;
+
 		// 형변환 연산자 오버로딩
 		operator COORD() const;		
 

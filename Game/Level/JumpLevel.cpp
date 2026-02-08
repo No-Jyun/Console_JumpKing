@@ -13,6 +13,7 @@
 #include "Core/Input.h"
 #include "Game/Game.h"
 #include "Render/Renderer.h"
+#include "Actor/BulletSpawner.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -62,6 +63,12 @@ void JumpLevel::Tick(float deltaTime)
 		// 메뉴 토글
 		Game::Get().ToggleMenu(LevelControl::PauseMenu);
 		return;
+	}
+
+	// Test
+	if (Input::Get().GetKeyDown('Q'))
+	{
+		AddNewActor(new BulletSpawner(Vector2::Zero, this));
 	}
 
 	// 플레이어 사망시
@@ -150,8 +157,8 @@ void JumpLevel::LoadStage(const char* filename)
 	drawPosition.x = Engine::Get().GetWidth() / 2;
 	drawPosition.y = Engine::Get().GetHeight() / 2;
 
-	int mapWidth = 0;
-	int mapHeight = 0;
+	int levelWidth = 0;
+	int levelHeight = 0;
 
 	// 너비 저장할 변수 선언
 	int x = 0;
@@ -174,21 +181,21 @@ void JumpLevel::LoadStage(const char* filename)
 		if (mapCharacter == '\n')
 		{
 			// 너비 갱신
-			mapWidth = mapWidth > x ? mapWidth : x;
+			levelWidth = levelWidth > x ? levelWidth : x;
 
 			// y좌표는 하나 늘리고, x좌표 초기화
 			x = 0;
 
 			// 높이 증가
-			mapHeight++;
+			levelHeight++;
 
 			continue;
 		}
 	}
 
 	// 맵이 콘솔의 중앙에 오도록 정렬
-	drawPosition.x -= mapWidth / 2;
-	drawPosition.y -= mapHeight / 2;
+	drawPosition.x -= levelWidth / 2;
+	drawPosition.y -= levelHeight / 2;
 
 	// 처음으로 돌아가 다시 맵 읽기
 	index = 0;
@@ -239,6 +246,16 @@ void JumpLevel::LoadStage(const char* filename)
 		case '#':
 			// 블럭(맵 경계) 생성
 			AddNewActor(new Block(position));
+
+			// 좌측 상단의 꼭짓점은 맵경계 블럭의 첫 생성시 설정
+			if (leftUpPosition == Vector2::Zero)
+			{
+				leftUpPosition = position;
+			}
+
+			// 우측 하단의 꼭짓점은 맵경계 블럭 마지막 생성시 설정
+			rightDownPosition = position;
+
 			break;
 
 		case '.':
@@ -420,6 +437,7 @@ void JumpLevel::ClearLevel()
 	state = LevelState::None;
 	upwardGoal.clear();
 	downwardGoal.clear();
+	bulletSpawnPositions.clear();
 	player = nullptr;
 }
 
@@ -444,6 +462,52 @@ void JumpLevel::RespawnPlayer()
 
 	// 스테이지 1 로드
 	LoadStage(stage[currentStageNum]);
+}
+
+const Vector2& JumpLevel::GetRandomBulletSpawnPosition()
+{
+	// 배열 길이 확인
+	size_t length = bulletSpawnPositions.size();
+
+	// 배열이 비었다면 배열 채우기
+	if (length == 0)
+	{
+		// 액터 순회
+		for (Actor* const actor : actors)
+		{
+			// 맵 경계 타일이 아니라면 스킵
+			if (!actor->IsTypeOf<Block>())
+			{
+				continue;
+			}
+
+			// 액터의 위치가 맵의 하단이면 스킵
+			if (actor->GetPosition().y >= leftUpPosition.y + ((rightDownPosition.y - leftUpPosition.y) / 2))
+			{
+				continue;
+			}
+
+			// 배열에 위치 추가
+			bulletSpawnPositions.emplace_back(actor->GetPosition());
+		}
+
+		// 길이 재설정
+		length = bulletSpawnPositions.size();
+	}
+
+	// 랜덤으로 위치 선택하여 반환
+	return bulletSpawnPositions[Util::Random(0, static_cast<int>(length) - 1)];
+}
+
+const Vector2& JumpLevel::GetPlayerPosition()
+{
+	// 플레이어 존재 체크
+	if (!player || isPlayerDead)
+	{
+		return Vector2::Zero;
+	}
+
+	return player->GetPosition();
 }
 
 void JumpLevel::CheckGameClear()

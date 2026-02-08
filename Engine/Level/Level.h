@@ -26,6 +26,12 @@ namespace Wanted
 		virtual void Tick(float deltaTime);
 		virtual void Draw();
 
+		// 현재 레벨(스테이지)에 그려진 맵의 좌측 상단 위치를 반환하는 함수
+		virtual const Vector2 GetLevelLeftUpPosition() { return Vector2::Zero; }
+
+		// 현재 레벨(스테이지)에 그려진 맵의 우측 하단 위치를 반환하는 함수
+		virtual const Vector2 GetLevelRightDownPosition() { return Vector2::Zero; }
+
 		// 각 레벨에 맞는 폰트 크기로 변경하는 함수
 		inline void SetLevelFontSize() { Renderer::Get().AdjustResolution(static_cast<SHORT>(fontSize)); }
 

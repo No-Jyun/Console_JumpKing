@@ -124,11 +124,10 @@ void Player::Fall(float deltaTime)
 	// position 벡터에 갱신
 	position.x = Util::FloatCastInt(x);
 
-	// Todo: 맵의 아래쪽으로 떨어지는 기믹이 필요할까?
 	// 추락은 떨어지기만 하므로 아래 체크만 하면 됨 
-	if (Util::FloatCastInt(y) > Engine::Get().GetHeight())
+	if (Util::FloatCastInt(y) > GetOwner()->GetLevelRightDownPosition().y)
 	{
-		y = static_cast<float>(Engine::Get().GetHeight() - 1);
+		y = static_cast<float>(GetOwner()->GetLevelRightDownPosition().y - 1);
 	}
 	
 	// position 벡터에 갱신
@@ -203,13 +202,16 @@ void Player::MoveOnIce(float deltaTime)
 
 const float Player::CheckXPosition(float nowX)
 {
-	if (nowX < 0.0f)
+	Vector2 leftUp = GetOwner()->GetLevelLeftUpPosition();
+	Vector2 rightDown = GetOwner()->GetLevelRightDownPosition();
+
+	if (nowX <= leftUp.x)
 	{
-		nowX = 0.0f;
+		nowX = leftUp.x + 1;
 	}
-	else if (Util::FloatCastInt(nowX) + width > Engine::Get().GetWidth())
+	else if (Util::FloatCastInt(nowX) + width > rightDown.x)
 	{
-		nowX = static_cast<float>(Engine::Get().GetWidth() - 1);
+		nowX = rightDown.x - 1;
 	}
 	return nowX;
 }
@@ -298,10 +300,10 @@ void Player::Jumping(float deltaTime)
 	// position 벡터에 갱신
 	position.x = Util::FloatCastInt(x);
 
-	// Todo: 맵의 아래쪽으로 떨어지는 기믹이 필요할까?
-	if (Util::FloatCastInt(y) > Engine::Get().GetHeight())
+	// 좌표 검사
+	if (Util::FloatCastInt(y) > GetOwner()->GetLevelRightDownPosition().y)
 	{
-		y = static_cast<float>(Engine::Get().GetHeight() - 1);
+		y = static_cast<float>(GetOwner()->GetLevelRightDownPosition().y - 1);
 	}
 	// 버퍼의 맨 위에 도달했다면 아래로 추락
 	else if (y < 0.0f)

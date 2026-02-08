@@ -72,6 +72,18 @@ public:
 
 	virtual void Tick(float deltaTime) override;
 
+	// 현재 로드된 스테이지의 너비를 반환하는 함수
+	virtual const Vector2 GetLevelLeftUpPosition() override { return leftUpPosition; }
+
+	// 현재 로드된 스테이지의 높이를 반환하는 함수
+	virtual const Vector2 GetLevelRightDownPosition() override { return rightDownPosition; }
+
+	// 랜덤으로 탄환이 생성될 위치를 반환하는 함수
+	const Vector2& GetRandomBulletSpawnPosition();
+
+	// 플레이어의 위치를 반환하는 함수
+	const Vector2& GetPlayerPosition();
+
 private:
 	// 스테이지를 로드하는 함수
 	void LoadStage(const char* filename);
@@ -106,6 +118,12 @@ private:
 	void RespawnPlayer();
 
 private:
+	// 현재 로드된 스테이지의 좌측 꼭짓점 위치
+	Vector2 leftUpPosition = Vector2::Zero;
+
+	// 현재 로드된 스테이지의 우측 아래 꼭짓점 위치
+	Vector2 rightDownPosition = Vector2::Zero;
+
 	// 현재 로드된 스테이지 넘버
 	int currentStageNum = 0;
 
@@ -123,6 +141,9 @@ private:
 
 	// 아래 스테이지로 향하는 타일을 저장할 배열
 	std::vector<Actor*> downwardGoal;
+
+	// 탄환이 생성될 위치를 저장하는 배열
+	std::vector<Vector2> bulletSpawnPositions;
 	
 	// 현재 맵의 플레이어를 가리키는 포인터
 	Player* player = nullptr;

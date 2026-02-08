@@ -90,6 +90,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actor\Bullet.cpp" />
+    <ClCompile Include="Actor\BulletSpawner.cpp" />
     <ClCompile Include="Actor\MapTile\DownwardGoal.cpp" />
     <ClCompile Include="Actor\MapTile\Block.cpp" />
     <ClCompile Include="Actor\MapTile\DownwardSpawn.cpp" />
@@ -109,6 +111,8 @@
     <ClCompile Include="Util\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actor\Bullet.h" />
+    <ClInclude Include="Actor\BulletSpawner.h" />
     <ClInclude Include="Actor\MapTile\DownwardGoal.h" />
     <ClInclude Include="Actor\MapTile\Block.h" />
     <ClInclude Include="Actor\MapTile\DownwardSpawn.h" />

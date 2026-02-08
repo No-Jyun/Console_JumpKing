@@ -1,4 +1,6 @@
 #include "Vector2.h"
+#include "Util/Util.h"
+
 #include <iostream>
 
 namespace Wanted
@@ -64,6 +66,21 @@ namespace Wanted
 	{
 		return !(*this == other);
 	}
+
+	const float Vector2::Dot(const float otherX, const float otherY) const
+	{
+		float xF = static_cast<float>(x);
+		float yF = static_cast<float>(y);
+
+		float length = Util::Sqrt(xF * xF + yF * yF);
+
+		// 내적을 위해 벡터 정규화
+		xF /= length;
+		yF /= length;
+
+		return xF * otherX + yF * otherY;
+	}
+
 	Vector2::operator COORD() const
 	{
 		COORD coord = {};
