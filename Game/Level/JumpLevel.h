@@ -100,8 +100,8 @@ private:
 	// 스테이지 로드시 레벨을 정리하는 함수
 	void ClearLevel();
 
-	// 게임 클리어 확인 함수
-	void CheckGameClear();
+	// 게임 클리어 함수
+	void GameClear();
 
 	// 충돌 판정 처리 함수
 	void ProcessCollisionPlayerAndOther();

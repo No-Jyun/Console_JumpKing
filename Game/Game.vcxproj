@@ -95,6 +95,7 @@
     <ClCompile Include="Actor\MapTile\DownwardGoal.cpp" />
     <ClCompile Include="Actor\MapTile\Block.cpp" />
     <ClCompile Include="Actor\MapTile\DownwardSpawn.cpp" />
+    <ClCompile Include="Actor\MapTile\Goal.cpp" />
     <ClCompile Include="Actor\MapTile\UpwardGoal.cpp" />
     <ClCompile Include="Actor\MapTile\Grass.cpp" />
     <ClCompile Include="Actor\MapTile\Ground.cpp" />
@@ -117,6 +118,7 @@
     <ClInclude Include="Actor\MapTile\DownwardGoal.h" />
     <ClInclude Include="Actor\MapTile\Block.h" />
     <ClInclude Include="Actor\MapTile\DownwardSpawn.h" />
+    <ClInclude Include="Actor\MapTile\Goal.h" />
     <ClInclude Include="Actor\MapTile\UpwardGoal.h" />
     <ClInclude Include="Actor\MapTile\Grass.h" />
     <ClInclude Include="Actor\MapTile\Ground.h" />

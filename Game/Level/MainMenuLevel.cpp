@@ -14,8 +14,8 @@ MainMenuLevel::MainMenuLevel()
 		"../Assets/MainMenu/GameStart.txt",
 		[]()
 		{
-			// 메뉴 토글 함수 호출
-			Game::Get().ToggleMenu(LevelControl::GameMenu);
+			// 새로운 게임 시작 함수 호출
+			Game::Get().StartNewGame();
 		}
 	));
 

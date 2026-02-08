@@ -19,7 +19,7 @@ Game::Game()
 	levels.emplace_back(new PauseMenuLevel());
 
 	// 시작 상태(레벨) 설정
-	state = LevelControl::MainMenu;
+	state = LevelControl::MainMenuLevel;
 
 	// 게임 시작 시 활성화할 레벨 설정
 	mainLevel = levels[0];
@@ -54,6 +54,29 @@ void Game::ToggleMenu(LevelControl levelControl)
 
 	// 메인 레벨 변경
 	mainLevel = levels[static_cast<int>(state)];
+	mainLevel->SetLevelFontSize();
+}
+
+void Game::StartNewGame()
+{
+	// 화면 지우기
+	system("cls");
+
+	// 상태 변경
+	state = LevelControl::GameLevel;
+
+	// 인덱스 설정
+	int levelIndex = static_cast<int>(state);
+
+	// 이전에 플레이한 JumpLevel 메모리 해제
+	delete levels[levelIndex];
+	levels[levelIndex] = nullptr;
+
+	// 새롭게 JumpLevel 메모리 할당 및 생성
+	levels[levelIndex] = new JumpLevel(1);
+
+	// 메인 레벨 변경
+	mainLevel = levels[levelIndex];
 	mainLevel->SetLevelFontSize();
 }
 

@@ -27,7 +27,7 @@ PauseMenuLevel::PauseMenuLevel()
 		[]() 
 		{
 			// 메뉴 토글 함수 호출
-			Game::Get().ToggleMenu(LevelControl::GameMenu);
+			Game::Get().ToggleMenu(LevelControl::GameLevel);
 		}
 	));
 
@@ -36,7 +36,7 @@ PauseMenuLevel::PauseMenuLevel()
 		[]()
 		{
 			// 메뉴 토글 함수 호출
-			Game::Get().ToggleMenu(LevelControl::MainMenu);
+			Game::Get().ToggleMenu(LevelControl::MainMenuLevel);
 		}
 	));
 

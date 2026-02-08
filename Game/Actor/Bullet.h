@@ -4,6 +4,7 @@
 
 using namespace Wanted;
 
+// 플레이어를 향해 날아가는 탄환 클래스
 class Bullet : public Actor
 {
 	// RTTI 선언

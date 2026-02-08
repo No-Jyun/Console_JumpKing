@@ -15,6 +15,9 @@ public:
 	// 메뉴/게임 레벨을 전환하는 함수
 	void ToggleMenu(LevelControl levelControl);
 
+	// 새로운 게임을 시작하는 함수
+	void StartNewGame();
+
 	static Game& Get();
 
 private:

@@ -5,7 +5,10 @@
 
 using namespace Wanted;
 
+// 전방 선언
 class JumpLevel;
+
+// 플레이어를 향해 날아갈 탄환을 생성하는 클래스
 class BulletSpawner : public Actor
 {
 	// RTTI 선언

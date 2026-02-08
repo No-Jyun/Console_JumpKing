@@ -9,6 +9,7 @@
 #include "Actor/MapTile/UpwardSpawn.h"
 #include "Actor/MapTile/DownwardGoal.h"
 #include "Actor/MapTile/DownwardSpawn.h"
+#include "Actor/MapTile/Goal.h"
 #include "Actor/BulletSpawner.h"
 #include "Actor/Bullet.h"
 #include "Actor/Player.h"
@@ -32,6 +33,7 @@ u : 위 스테이지를 향하는 블럭
 i : 아래 스테이지에서 위로 올라올때 생생될 위치
 d : 아래 스테이지를 향하는 블럭
 f : 위 스테이지에서 아래로 내려올때 생성될 위치
+G : 게임 클리어 목적지
 */
 
 // 스테이지를 로드하기 위한 문자열
@@ -64,7 +66,7 @@ void JumpLevel::Tick(float deltaTime)
 	if (Input::Get().GetKeyDown(VK_ESCAPE))
 	{
 		// 메뉴 토글
-		Game::Get().ToggleMenu(LevelControl::PauseMenu);
+		Game::Get().ToggleMenu(LevelControl::PauseMenuLevel);
 		return;
 	}
 
@@ -92,6 +94,13 @@ void JumpLevel::Tick(float deltaTime)
 			// 플레이어 리스폰
 			RespawnPlayer();
 		}
+		return;
+	}
+
+	// 게임 클리어시
+	if (isGameClear)
+	{
+		GameClear();
 		return;
 	}
 
@@ -243,6 +252,7 @@ void JumpLevel::LoadStage(const char* filename)
 		i : 아래 스테이지에서 위로 올라올때 생생될 위치
 		d : 아래 스테이지를 향하는 블럭
 		f : 위 스테이지에서 아래로 내려올때 생성될 위치
+		G : 게임 클리어 목적지
 		*/
 		// 한 문자씩 처리
 		switch (mapCharacter)
@@ -283,6 +293,11 @@ void JumpLevel::LoadStage(const char* filename)
 		case '3':
 			// 가시 방향 인덱스 값 전달
 			AddNewActor(new Spike(position, mapCharacter - '0'));
+			break;
+
+		case 'G':
+			// 게임 클리어 목적지 타일 생성
+			AddNewActor(new Goal(position));
 			break;
 
 		case 'u':
@@ -359,6 +374,7 @@ void JumpLevel::LoadStage(const char* filename)
 
 			// 맵 로드시 p 가 존재한다면 1스테이지라는 의미이므로 리스폰 위치 설정
 			playerRespawnPosition = position;
+			break;
 		}
 
 		// x 좌표 증가 처리
@@ -445,12 +461,22 @@ void JumpLevel::ClearLevel()
 	player = nullptr;
 }
 
+void JumpLevel::GameClear()
+{
+	// Todo: 플레이어가 Flag에 닿았는지 확인
+	
+
+	// 메뉴 토글
+	Game::Get().ToggleMenu(LevelControl::PauseMenuLevel);
+
+}
+
 void JumpLevel::RespawnPlayer()
 {
 	// 1스테이지에서 사망했다면 플레이어 생성만
 	if (currentStageNum == 1)
 	{
-		player = new Player(playerSpawnPosition);
+		player = new Player(playerRespawnPosition);
 		AddNewActor(player);
 		return;
 	}
@@ -512,11 +538,6 @@ const Vector2& JumpLevel::GetPlayerPosition()
 	}
 
 	return player->GetPosition();
-}
-
-void JumpLevel::CheckGameClear()
-{
-	// Todo: 플레이어가 Flag에 닿았는지 확인
 }
 
 void JumpLevel::ProcessCollisionPlayerAndOther()
