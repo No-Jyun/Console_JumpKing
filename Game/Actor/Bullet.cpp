@@ -39,8 +39,8 @@ void Bullet::Tick(float deltaTime)
 	Vector2 rightDown = GetOwner()->GetLevelRightDownPosition();
 	
 	// 좌표 검사 (레벨 위,아래, 양끝 지점을 벗어났는지 확인
-	if (tempXpos < leftUp.x || tempXpos + width > rightDown.x ||
-		tempYpos < leftUp.y || tempYpos + 1 > rightDown.y)
+	if (tempXpos < leftUp.x || tempXpos > rightDown.x ||
+		tempYpos < leftUp.y || tempYpos > rightDown.y)
 	{
 		Destroy();
 		return;
@@ -74,34 +74,52 @@ void Bullet::SetBulletDirectionAndSpeed()
 	// 방향 벡터를 정규화하여 y좌표의 방향 결정
 	yDirection = static_cast<float>(targetDirection.y) / length;
 
-	// 방향에 따라 탄환 이미지를 생성하기 위해 내적 계산
-	// 위, 아래 방향 벡터
-	Vector2 upD = Vector2::Up;
+	//// 방향에 따라 탄환 이미지를 생성하기 위해 내적 계산
+	//// 위, 아래 방향 벡터
+	//Vector2 downD = Vector2::Down;
 
-	// 좌상, 우하 방향 벡터 (콘솔 기준)
-	Vector2 leftD = Vector2(1, -1);
+	//// 좌상, 우하 방향 벡터 (콘솔 기준)
+	//Vector2 leftD = Vector2(-1, 1);
 
-	// 좌하, 우상 방향 벡터 (콘솔 기준)
-	Vector2 rightD = Vector2(1, 1);
+	//// 좌하, 우상 방향 벡터 (콘솔 기준)
+	//Vector2 rightD = Vector2(1, 1);
 
-	// 탄환의 방향과 내적 계산
-	float dotUp = upD.Dot(xDirection, yDirection);
-	float dotLeft = leftD.Dot(xDirection, yDirection);
-	float dotRight = rightD.Dot(xDirection, yDirection);
+	//// 탄환의 방향과 내적 계산
+	//float dotUp = downD.Dot(xDirection, yDirection);
+	//float dotLeft = leftD.Dot(xDirection, yDirection);
+	//float dotRight = rightD.Dot(xDirection, yDirection);
 
-	// 위, 아래 방향과 가장 가까운 경우
-	if (dotUp >= dotLeft && dotUp >= dotRight)
+	//// 위, 아래 방향과 가장 가까운 경우
+	//if (dotUp >= dotLeft && dotUp >= dotRight)
+	//{
+	//	ChangeImage("|");
+	//}
+	//// 좌상, 우하 방향과 가장 가까운 경우
+	//else if (dotLeft >= dotUp && dotLeft >= dotRight)
+	//{
+	//	ChangeImage("/");
+	//}
+	//// 좌하, 우상 방향과 가장 가까운 경우
+	//else
+	//{
+	//	ChangeImage("\\");
+	//}
+
+	// y방향 좌표의 절대값이 특정 값 이상이면 수직 방향으로 변경
+	if (fabs(yDirection) > 0.7f)
 	{
 		ChangeImage("|");
 	}
-	// 좌상, 우하 방향과 가장 가까운 경우
-	else if (dotLeft >= dotUp && dotLeft >= dotRight)
-	{
-		ChangeImage("/");
-	}
-	// 좌하, 우상 방향과 가장 가까운 경우
-	else
+
+	// x방향 * y방향이 양수라면 콘솔 화면에서 우하단 또는 좌상단을 향함
+	else if (xDirection * yDirection > 0)
 	{
 		ChangeImage("\\");
+	}
+
+	// x방향 * y방향이 음수라면 콘솔 화면에서 우상단 또는 좌하단을 향함
+	else
+	{
+		ChangeImage("/");
 	}
 }

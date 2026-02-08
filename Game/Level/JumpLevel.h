@@ -104,15 +104,16 @@ private:
 	void CheckGameClear();
 
 	// 충돌 판정 처리 함수
-	// Todo: 탄환과 충돌
 	void ProcessCollisionPlayerAndOther();
-	//void ProcessCollisionPlayerAndSpike();
 
 	// 플레이어의 발판을 확인하는 함수
 	void CheckGround();
 
 	// 충돌을 무시할 액터인지 판단하는 함수
 	bool IsCollisionSkipped(Actor* const other);
+
+	// 플레이어 사망처리하는 함수
+	void PlayerDead();
 
 	// 플레이어 리스폰 함수
 	void RespawnPlayer();

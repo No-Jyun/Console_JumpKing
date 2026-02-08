@@ -2,18 +2,20 @@
 #include "Actor/MapTile/Block.h"
 #include "Actor/MapTile/Ground.h"
 #include "Actor/MapTile/Grass.h"
+#include "Actor/MapTile/Wall.h"
 #include "Actor/MapTile/Ice.h"
 #include "Actor/MapTile/Spike.h"
 #include "Actor/MapTile/UpwardGoal.h"
 #include "Actor/MapTile/UpwardSpawn.h"
 #include "Actor/MapTile/DownwardGoal.h"
-#include"Actor/MapTile/DownwardSpawn.h"
+#include "Actor/MapTile/DownwardSpawn.h"
+#include "Actor/BulletSpawner.h"
+#include "Actor/Bullet.h"
 #include "Actor/Player.h"
 #include "Util/Util.h"
 #include "Core/Input.h"
 #include "Game/Game.h"
 #include "Render/Renderer.h"
-#include "Actor/BulletSpawner.h"
 
 #include <Windows.h>
 #include <iostream>
@@ -22,6 +24,7 @@
 # : 화면 테두리
 . : 바닥
 , : 풀
+/ : 벽
 p : 플레이어
 * : 얼음
 0,1,2,3 : 가시 (방향)
@@ -65,7 +68,7 @@ void JumpLevel::Tick(float deltaTime)
 		return;
 	}
 
-	// Test
+	// Todo: Test
 	if (Input::Get().GetKeyDown('Q'))
 	{
 		AddNewActor(new BulletSpawner(Vector2::Zero, this));
@@ -232,6 +235,7 @@ void JumpLevel::LoadStage(const char* filename)
 		# : 화면 테두리
 		. : 바닥
 		, : 풀
+		/ : 벽
 		p : 플레이어
 		* : 얼음
 		0,1,2,3 : 가시 (방향)
@@ -580,14 +584,21 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 		// 스테이지 1로 돌아가서 리스폰
 		else if (actor->IsTypeOf<Spike>())
 		{
-			// 플레이어 죽음 설정
-			isPlayerDead = true;
+			// 플레이어 사망
+			PlayerDead();
 
-			// 플레이어 사망 처리
-			player->Die();
+			return;
+		}
 
-			// 포인터 초기화
-			player = nullptr;
+		// 충돌한 액터가 탄환이라면 사망처리
+		// 스테이지 1로 돌아가서 리스폰
+		else if (actor->IsTypeOf<Bullet>())
+		{
+			// 플레이어 사망
+			PlayerDead();
+
+			// 탄환 제거
+			actor->Destroy();
 
 			return;
 		}
@@ -687,18 +698,23 @@ void JumpLevel::CheckGround()
 				player->UpdateIsOnIce(false);
 			}
 
-			// 가시를 밟은 경우
+			// 가시를 밟은 경우 사망
 			// 스테이지 1로 돌아가서 리스폰
 			if (other->IsTypeOf<Spike>())
 			{
-				// 플레이어 죽음 설정
-				isPlayerDead = true;
+				// 플레이어 사망
+				PlayerDead();
+			}
 
-				// 플레이어 사망 처리
-				player->Die();
+			// 충돌한 액터가 탄환이라면 사망처리
+			// 스테이지 1로 돌아가서 리스폰
+			else if (other->IsTypeOf<Bullet>())
+			{
+				// 플레이어 사망
+				PlayerDead();
 
-				// 포인터 초기화
-				player = nullptr;
+				// 탄환 제거
+				other->Destroy();
 			}
 
 			return;
@@ -730,4 +746,16 @@ bool JumpLevel::IsCollisionSkipped(Actor* const other)
 
 	// 그 외는 충돌 검사 필요
 	return false;
+}
+
+void JumpLevel::PlayerDead()
+{
+	// 플레이어 죽음 설정
+	isPlayerDead = true;
+
+	// 플레이어 사망 처리
+	player->Die();
+
+	// 포인터 초기화
+	player = nullptr;
 }
