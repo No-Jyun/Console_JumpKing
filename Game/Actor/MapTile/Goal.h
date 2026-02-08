@@ -5,7 +5,7 @@
 
 using namespace Wanted;
 
-// 게임 클리어를 판단할 목적지 클래스
+// 게임 클리어를 판단할 목적지 타일 액터 클래스
 class Goal : public Actor
 {
 	// RTTI 선언

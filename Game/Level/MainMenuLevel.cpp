@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+// 메인 메뉴 로고 파일 위치 문자열
 const char* mainMenuLogoFileName = "../Assets/MainMenu/MainMenuLogo.txt";
 
 MainMenuLevel::MainMenuLevel()
@@ -237,7 +238,7 @@ void MainMenuLevel::SetVectorPosition()
 	}
 
 	// 1번 항목은 메인 메뉴 로고의 아래에 오도록 y좌표 저장
-	mainMenuItems[0]->position.y = logoPosition.y + logoArrayHeight + 2;
+	mainMenuItems[0]->position.y = logoPosition.y + logoArrayHeight + 4;
 
 	// 2번 항목은 1번 항목 아래에 오도록 y좌표 저장
 	mainMenuItems[1]->position.y = mainMenuItems[0]->position.y + static_cast<int>(mainMenuItems[0]->texts.size()) + 2;

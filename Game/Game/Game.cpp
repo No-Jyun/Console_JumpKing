@@ -2,6 +2,7 @@
 #include "Level/PauseMenuLevel.h"
 #include "Level/JumpLevel.h"
 #include "Level/MainMenuLevel.h"
+#include "Level/ClearMenuLevel.h"
 #include "Render/Renderer.h"
 
 #include <iostream>
@@ -17,6 +18,7 @@ Game::Game()
 	levels.emplace_back(new MainMenuLevel());
 	levels.emplace_back(new JumpLevel(1));
 	levels.emplace_back(new PauseMenuLevel());
+	levels.emplace_back(new ClearMenuLevel());
 
 	// 시작 상태(레벨) 설정
 	state = LevelControl::MainMenuLevel;

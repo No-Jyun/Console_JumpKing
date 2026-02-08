@@ -8,6 +8,7 @@ namespace Wanted
 		MainMenuLevel = 0,
 		GameLevel = 1,
 		PauseMenuLevel = 2,
+		ClearMenuLevel = 3,
 		None,
 	};
 }

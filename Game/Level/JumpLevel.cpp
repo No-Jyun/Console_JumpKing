@@ -10,6 +10,7 @@
 #include "Actor/MapTile/DownwardGoal.h"
 #include "Actor/MapTile/DownwardSpawn.h"
 #include "Actor/MapTile/Goal.h"
+#include "Actor/MapTile/GoalArea.h"
 #include "Actor/BulletSpawner.h"
 #include "Actor/Bullet.h"
 #include "Actor/Player.h"
@@ -34,6 +35,7 @@ i : 아래 스테이지에서 위로 올라올때 생생될 위치
 d : 아래 스테이지를 향하는 블럭
 f : 위 스테이지에서 아래로 내려올때 생성될 위치
 G : 게임 클리어 목적지
+g : 게임 클리어 목적지의 트리거 박스
 */
 
 // 스테이지를 로드하기 위한 문자열
@@ -97,6 +99,12 @@ void JumpLevel::Tick(float deltaTime)
 		return;
 	}
 
+	// 충돌 판정 처리
+	ProcessCollisionPlayerAndOther();
+
+	// 발판 확인 
+	CheckGround();
+
 	// 게임 클리어시
 	if (isGameClear)
 	{
@@ -104,20 +112,11 @@ void JumpLevel::Tick(float deltaTime)
 		return;
 	}
 
-	// 충돌 판정 처리
-	ProcessCollisionPlayerAndOther();
-
-	// 발판 확인 
-	CheckGround();
-
 	// 현재 레벨 상태에 따라 스테이지 변동
 	if (state != LevelState::None)
 	{
 		PlayerGotoStage();
 	}
-
-	// Draw 필요??
-	// 플레이어가 죽었을 경우 / 클리어 했을 경우
 }
 
 void JumpLevel::LoadStage(const char* filename)
@@ -253,6 +252,7 @@ void JumpLevel::LoadStage(const char* filename)
 		d : 아래 스테이지를 향하는 블럭
 		f : 위 스테이지에서 아래로 내려올때 생성될 위치
 		G : 게임 클리어 목적지
+		g : 게임 클리어 목적지의 트리거 박스
 		*/
 		// 한 문자씩 처리
 		switch (mapCharacter)
@@ -298,6 +298,11 @@ void JumpLevel::LoadStage(const char* filename)
 		case 'G':
 			// 게임 클리어 목적지 타일 생성
 			AddNewActor(new Goal(position));
+			break;
+
+		case 'g':
+			// 게임 클리어 목적지 트리거 박스 타일 생성
+			AddNewActor(new GoalArea(position));
 			break;
 
 		case 'u':
@@ -465,10 +470,8 @@ void JumpLevel::GameClear()
 {
 	// Todo: 플레이어가 Flag에 닿았는지 확인
 	
-
-	// 메뉴 토글
-	Game::Get().ToggleMenu(LevelControl::PauseMenuLevel);
-
+	// 클리어 화면으로 메뉴 토글
+	Game::Get().ToggleMenu(LevelControl::ClearMenuLevel);
 }
 
 void JumpLevel::RespawnPlayer()
@@ -624,6 +627,14 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 			return;
 		}
 
+		// 충돌한 액터가 게임 클리어 목적지 또는 해당 영역이라면
+		else if (actor->IsTypeOf<Goal>() || actor->IsTypeOf<GoalArea>())
+		{
+			// 게임 클리어!!
+			isGameClear = true;
+			return;
+		}
+
 		// 플레이어에게 충돌방향과 액터 알리기
 		player->CrashedWithOther(crashedDir, *actor);
 		break;
@@ -701,6 +712,14 @@ void JumpLevel::CheckGround()
 				// 플레이어 상태 저장
 				SavePlayerData(goalIndex);
 
+				return;
+			}
+
+			// 충돌한 액터가 게임 클리어 목적지 또는 해당 영역이라면
+			else if (other->IsTypeOf<Goal>() || other->IsTypeOf<GoalArea>())
+			{
+				// 게임 클리어!!
+				isGameClear = true;
 				return;
 			}
 
