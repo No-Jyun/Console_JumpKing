@@ -28,7 +28,11 @@ namespace Wanted
 			__debugbreak();
 		}
 
-		//ChangeFontSize(2);
+		// 윈도우 버퍼 최대 크기 측정
+		//COORD test = GetLargestConsoleWindowSize(buffer);
+		//std::cout << test.X << ' ' << test.Y << "\n";
+
+		//ChangeFontSize(8);
 
 		// 버퍼 크기 설정 (콘솔 전체 공간 크기)
 		// Screen Buffer: 실제 텍스트가 저장되는 전체 2D 공간
@@ -46,10 +50,10 @@ namespace Wanted
 		rect.Right = static_cast<short>(screenSize.x - 1);
 		rect.Bottom = static_cast<short>(screenSize.y - 1);
 
-		if (!SetConsoleWindowInfo(buffer, true, &rect))
+		if (!SetConsoleWindowInfo(buffer, TRUE, &rect))
 		{
-			//DWORD errorCode = GetLastError();
-			std::cerr << "Failed to set console window info\n";
+			DWORD errorCode = GetLastError();
+			std::cerr << errorCode << "\n" << "Failed to set console window info\n";
 			__debugbreak();
 		}		
 

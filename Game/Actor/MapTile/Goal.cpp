@@ -10,7 +10,7 @@ static const char* images[] =
 };
 
 // 목적지 타일의 색상 배열
-static const Color colors[] =
+static const Color itemColors[] =
 {
 	Color::LightRed,
 	Color::LightYellow,
@@ -43,7 +43,7 @@ void Goal::Tick(float deltaTime)
 		timer.Reset();
 
 		// 색상 배열의 크기
-		int colorLength = static_cast<int>(sizeof(colors) / sizeof(colors[0]));
+		int colorLength = static_cast<int>(sizeof(itemColors) / sizeof(itemColors[0]));
 
 		// 현재 색상 인덱스 증가 및 모듈러 연산
 		currentColorIndex = (currentColorIndex + 1) % colorLength;
@@ -61,6 +61,6 @@ void Goal::Draw()
 	for (int i = 0;i < imageLength;i++)
 	{
 		// i번 이미지는 y좌표의 i 만큼 아래에 Draw
-		Renderer::Get().Submit(images[i], Vector2(position.x, position.y + i), colors[currentColorIndex], sortingOrder);
+		Renderer::Get().Submit(images[i], Vector2(position.x, position.y + i), itemColors[currentColorIndex], sortingOrder);
 	}
 }

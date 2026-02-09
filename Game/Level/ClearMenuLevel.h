@@ -29,6 +29,9 @@ private:
 	// 게임 클리어 항목을 파일에서 읽고 저장하는 함수
 	void LoadClearMenuItem();
 
+	// 게임 클리어 배너를 파일에서 읽고 저장하는 함수
+	void LoadClearMenuBanner();
+
 	// 벡터 멤버 변수 초기화하는 함수
 	void SetVectorPosition();
 
@@ -38,6 +41,9 @@ private:
 	// 게임 클리어 항목 그리는 함수
 	void DrawItem();
 
+	// 게임 클리어 배너를 그리는 함수
+	void DrawBanner();
+
 private:
 	// 파일로부터 읽은 게임 클리어 문자열을 저장할 배열
 	std::vector<const char*> clearMenuLogo;
@@ -45,23 +51,31 @@ private:
 	// 파일로부터 읽은 게임 클리어 항목 문자열을 저장할 배열
 	std::vector<const char*> clearMenuItem;
 
-	// 클리어 화면 로고 크기
-	int logoArrayWidth = 0;
-	int logoArrayHeight = 0;
+	// 파일로부터 읽은 게임 클리어 배너 문자열을 저장할 배열
+	std::vector<const char*> clearMenuBanner;
 
-	// 콘솔 화면의 정중앙 값을 저장할 좌표
+	// 콘솔 화면의 정중앙 값을 저장할 위치
 	Vector2 consoleCenter;
 
-	// 클리어 화면 로고 그리는 좌표
+	// 클리어 화면 로고 그리는 위치
 	Vector2 logoPosition;
 
-	// 클리어 화면 항목 그리는 좌표
+	// 클리어 화면 항목 그리는 위치
 	Vector2 itemPosition;
 
-	// 색상 배열에서 현재 색상의 인덱스
-	int currentColorIndex = 0;
+	// 클리어 화면 배너 그리는 위치
+	Vector2 bannerPosition;
+
+	// 항목 색상 배열에서 현재 색상의 인덱스
+	int currentItemColorIndex = 0;
+
+	// 배너 색상 배열에서 현재 색상의 인덱스
+	int currentBannerColorIndex = 0;
 
 	// 게임 클리어 항목 색상 전환 타이머
-	Timer timer;
+	Timer itemColorTimer;
+
+	// 게임 클리어 배너 색상 전환 타이머
+	Timer bannerColorTimer;
 };
 
