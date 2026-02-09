@@ -83,6 +83,13 @@ void JumpLevel::Tick(float deltaTime)
 	// Todo: Test
 	if (Input::Get().GetKeyDown('W'))
 	{
+		state = LevelState::PreviousLevel;
+		return;
+	}
+
+	// Todo: Test
+	if (Input::Get().GetKeyDown('R'))
+	{
 		AddNewActor(new Goal(Vector2(player->position.x + 1, player->position.y)));		
 	}
 
