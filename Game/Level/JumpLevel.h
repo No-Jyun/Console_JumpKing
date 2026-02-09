@@ -106,9 +106,6 @@ private:
 	// 충돌 판정 처리 함수
 	void ProcessCollisionPlayerAndOther();
 
-	// 플레이어의 발판을 확인하는 함수
-	void CheckGround();
-
 	// 충돌을 무시할 액터인지 판단하는 함수
 	bool IsCollisionSkipped(Actor* const other);
 

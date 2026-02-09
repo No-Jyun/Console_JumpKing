@@ -85,6 +85,7 @@ void Player::UpdateIsLanding(bool isLanding)
 	// 점프 중이였고, 착륙했거나, 추락 중에 바닥에 닿았다면
 	if ((isJumping && isLanding) || (isFalling && isLanding))
 	{
+		// x, y 좌표 보정
 		x = static_cast<float>(position.x);
 		y = static_cast<float>(position.y);
 
@@ -92,7 +93,7 @@ void Player::UpdateIsLanding(bool isLanding)
 		isJumping = false;
 		isFalling = false;
 
-		// 가속도 초기화
+		// 속도 초기화
 		velocityX = 0.0f;
 		velocityY = 0.0f;
 
@@ -103,11 +104,21 @@ void Player::UpdateIsLanding(bool isLanding)
 	// 추락 해야하므로 추락 기본값 세팅
 	else if (!isJumping && !isLanding && !isFalling)
 	{
+		// 상태 변수 설정
 		isFalling = true;
 		isOnIce = false;
+
+		// 방향에 따라 x속도 설정
 		velocityX = isLeft ? -5.0f : 5.0f;
+
+		// y속도 초기화
 		velocityY = 0.0f;
 
+		// x, y 좌표 보정
+		x = static_cast<float>(position.x);
+		y = static_cast<float>(position.y);
+
+		// 상태 변경
 		state = PlayerState::Downward;
 	}
 }
@@ -136,6 +147,7 @@ void Player::Fall(float deltaTime)
 	// position 벡터에 갱신
 	position.y = Util::FloatCastInt(y);
 
+	// 상태 변경
 	state = PlayerState::Downward;
 }
 
@@ -144,6 +156,7 @@ void Player::MoveLeft(float deltaTime)
 	// 점프키 입력 중에는 좌우 방향 지정만 가능
 	if (isJumpKeyDown)
 	{
+		// 방향 상태 변경
 		isLeft = true;
 
 		// 플레이어가 왼쪽 보도록 상태 변경
@@ -170,6 +183,7 @@ void Player::MoveRight(float deltaTime)
 	// 점프키 입력 중에는 좌우 방향 지정만 가능
 	if (isJumpKeyDown)
 	{
+		// 방향 상태 변경
 		isLeft = false;
 
 		// 플레이어가 오른쪽 보도록 상태 변경
@@ -193,6 +207,7 @@ void Player::MoveRight(float deltaTime)
 
 void Player::MoveOnIce(float deltaTime)
 {
+	// 이동거리 계산
 	float moveDistance = moveSpeed * deltaTime;
 
 	// 방향에 따라 이동
@@ -207,9 +222,11 @@ void Player::MoveOnIce(float deltaTime)
 
 const float Player::CheckXPosition(float nowX)
 {
+	// 로드된 스테이지의 꼭짓점 가져오기
 	Vector2 leftUp = GetOwner()->GetLevelLeftUpPosition();
 	Vector2 rightDown = GetOwner()->GetLevelRightDownPosition();
 
+	// 좌표 검사
 	if (nowX <= leftUp.x)
 	{
 		nowX = leftUp.x + 1;
@@ -223,6 +240,7 @@ const float Player::CheckXPosition(float nowX)
 
 void Player::JumpKey(float deltaTime)
 {
+	// 상태 설정
 	isJumpKeyDown = true;
 
 	// 점프 충전 상태로 변경
@@ -234,15 +252,23 @@ void Player::JumpKey(float deltaTime)
 	// 1.2초 이상 누른 경우 강제 점프
 	if (jumpTimer.IsTimeOut())
 	{
+		// 점프관련 변수 세팅
 		Jump();
+
+		// 점프 실행
 		Jumping(deltaTime);
 	}
 }
 
 void Player::Jump()
 {
+	// 누른 시간에 비례해서 점프력 가져오기
 	const int jumpPower = GetJumpPower(jumpTimer.GetElapsedTime());
+
+	// 타이머 리셋
 	jumpTimer.Reset();
+
+	// 점프 누르는 상태 초기화
 	isJumpKeyDown = false;
 
 	// 현재 방향으로 특정 점프력으로 점프를 하기위해
@@ -289,9 +315,6 @@ void Player::Jumping(float deltaTime)
 	// y좌표 속도는 중력의 영향을 받음
 	velocityY += gravity * deltaTime;
 
-	// 최대 추락 속도 제한 필요?
-	//if(velocityY )
-
 	// 이동
 	x += velocityX * deltaTime;
 	y += velocityY * deltaTime;
@@ -307,12 +330,15 @@ void Player::Jumping(float deltaTime)
 	{
 		y = static_cast<float>(GetOwner()->GetLevelRightDownPosition().y - 1);
 	}
+
 	// 버퍼의 맨 위에 도달했다면 아래로 추락
 	else if (y < 0.0f)
 	{
 		velocityY = 0.0f;
 		y = 0.0f;
 	}
+
+	// position 벡터에 갱신
 	position.y = Util::FloatCastInt(y);
 
 	// 속도가 양수가 되면(정점을 지나면) 내려가는 상태로 변경
@@ -320,6 +346,7 @@ void Player::Jumping(float deltaTime)
 	{
 		state = PlayerState::Downward;
 	}
+
 	//  속도가 음수면 올라가는 상태
 	else
 	{
@@ -329,7 +356,7 @@ void Player::Jumping(float deltaTime)
 
 const int Player::GetJumpPower(const float chargedTime)
 {
-	// 점프력 조정 필요
+	// 점프력 조정 가능
 	if (chargedTime <= 0.2f)
 	{
 		return 1;
@@ -396,15 +423,25 @@ const Vector2 Player::TestIntersect(Actor& const other)
 	}
 
 	// 다른 액터의 위 좌표가 내 아래 좌표보다 더 아래에 있는 경우
-	if (yMax <= otherYMin)
+	if (yMax < otherYMin)
 	{
 		return Vector2::Zero;
 	}
 
 	// 다른 액터의 아래 좌표가 내 위 좌표보다 더 위에 있는 경우
-	if (yMin >= otherYMax)
+	if (yMin > otherYMax)
 	{
 		return Vector2::Zero;
+	}
+
+	// 플레이어의 바닥이 상대 액터의 윗면과 맞닿아있는 경우
+	if (yMax == otherYMin)
+	{
+		// 렌더링에 그려진 / 화면에 보이는 플레이어와 발판의 x좌표가 같을 때만 충돌 감지
+		if (position.x == other.GetPosition().x)
+		{
+			return Vector2::Down;
+		}
 	}
 
 	// 겹친 거리 계산
@@ -414,31 +451,37 @@ const Vector2 Player::TestIntersect(Actor& const other)
 	// 어느 방향 충돌인지 판정
 	if (overlapX < overlapY)
 	{
-		// x축으로 더 적게 겹침 -> 좌/우 충돌
-		// 다른 액터의 오른쪽 좌표가 내 왼쪽 좌표보다 큰 경우 
-		if (xMin < otherXMax)
+		// x축으로 더 적게 겹침 -> 좌/우 충돌		
+		// x의 속도가 양수라면 오른쪽 충돌
+		if (velocityX > 0)
 		{
-			// 플레이어 기준 왼쪽에서 충돌
-			return Vector2::Left;
+			return Vector2::Right;
 		}
-		// 다른 액터의 왼쪽 좌표가 내 오른쪽 좌표보다 큰 경우 
+
+		// x의 속도가 음수라면 왼쪽 충돌
 		else
 		{
-			// 플레이어 기준 오른쪽에서 충돌
-			return Vector2::Right;
+			return Vector2::Left;
 		}
 	}
 	else
 	{
 		// y축으로 더 적게 겹침 -> 상/하 충돌
-		// 다른 액터의 아래 좌표가 내 위 좌표보다 큰 경우 
-		if (yMin < otherYMax)
+		// y의 속도가 양수 또는 0 이라면 하단 충돌
+		if (velocityY >= 0)
 		{
-			// 플레이어 기준 위에서 충돌
+			// 렌더링에 그려진 / 화면에 보이는 플레이어와 발판의 x좌표가 같을 때만 충돌 감지
+			if (position.x == other.GetPosition().x)
+			{
+				return Vector2::Down;
+			}
+		}
+
+		// y의 속도가 음수라면 상단 충돌
+		else
+		{
 			return Vector2::Up;
 		}
-		// 다른 액터의 위 좌표가 내 아래 좌표보다 큰 경우
-		// 바닥과의 충돌이므로 다른 곳에서 처리
 	}
 
 	// 예외상황을 위한 리턴
@@ -447,10 +490,6 @@ const Vector2 Player::TestIntersect(Actor& const other)
 
 void Player::CrashedWithOther(const Vector2& crashedDirection, const Actor& other)
 {
-	// x, y 좌표 보정
-	//x = static_cast<float>(position.x);
-	//y = static_cast<float>(position.y);
-
 	// 위에 충돌한 경우
 	if (crashedDirection == Vector2::Up)
 	{
@@ -489,12 +528,16 @@ void Player::Die()
 
 void Player::ChangeImageAndColor()
 {
+	// 현 상태에 맞게 문자열(이미지) 변경
 	ChangeImage(GetPlayerStringByState(state));
+
+	// 현 상태에 맞게 문자열(이미지) 색상 변경
 	color = GetPlayerColorByState(state);
 }
 
 const char* Player::GetPlayerStringByState(const PlayerState& state)
 {
+	// 현 상태에 맞는 문자열 (이미지) 반환
 	switch (state)
 	{
 	case PlayerState::IdleL:
@@ -524,6 +567,7 @@ const char* Player::GetPlayerStringByState(const PlayerState& state)
 
 const Color Player::GetPlayerColorByState(const PlayerState& state)
 {
+	// 현 상태에 맞는 문자열 (이미지) 색상 반환
 	switch (state)
 	{
 	case PlayerState::IdleL:

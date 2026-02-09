@@ -88,7 +88,7 @@ void JumpLevel::Tick(float deltaTime)
 	}
 
 	// Todo: Test
-	if (Input::Get().GetKeyDown('R'))
+	if (Input::Get().GetKeyDown('E'))
 	{
 		AddNewActor(new Goal(Vector2(player->position.x + 1, player->position.y)));		
 	}
@@ -116,9 +116,6 @@ void JumpLevel::Tick(float deltaTime)
 
 	// 충돌 판정 처리
 	ProcessCollisionPlayerAndOther();
-
-	// 발판 확인 
-	CheckGround();
 
 	// 게임 클리어시
 	if (isGameClear)
@@ -504,7 +501,7 @@ void JumpLevel::GameClear()
 
 void JumpLevel::RespawnPlayer()
 {
-	// 1스테이지에서 사망했다면 플레이어 생성만
+	// 1스테이지에서 사망했다면 플레이어 생성만 처리
 	if (currentStageNum == 1)
 	{
 		player = new Player(playerRespawnPosition);
@@ -601,6 +598,12 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 		return;
 	}
 
+	// 바닥 충돌 판정용 플래그
+	bool isLanding = false;
+
+	// 바닥 충돌한 액터 저장용 변수
+	Actor* landedActor = nullptr;
+
 	// 충돌 판정
 	for (Actor* const actor : others)
 	{
@@ -660,138 +663,48 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 		{
 			// 게임 클리어!!
 			isGameClear = true;
+
 			return;
+		}
+
+		// 바닥 충돌한 경우
+		if (crashedDir == Vector2::Down)
+		{
+			// 플래그 On
+			isLanding = true;
+
+			// 액터 저장
+			landedActor = actor;
 		}
 
 		// 플레이어에게 충돌방향과 액터 알리기
  		player->CrashedWithOther(crashedDir, *actor);
 		break;
 	}
-}
 
-void JumpLevel::CheckGround()
-{
-	// 플레이어가 없다면 리턴
-	if (!player)
+	// 플래그가 켜졌다면
+	if (isLanding)
 	{
-		return;
-	}
+		// 플레이어 착륙
+		player->UpdateIsLanding(true);
 
-	// 액터 필터링을 위한 변수
-	std::vector<Actor*> others;
-
-	// 액터 필터링
-	for (Actor* const actor : actors)
-	{
-		// 현재 액터가 충돌하지 않을 액터 또는 플레이어라면 스킵
-		if (IsCollisionSkipped(actor) || actor == player)
+		// 얼음을 밟은 경우
+		if (landedActor->IsTypeOf<Ice>())
 		{
-			continue;
+			// 얼음을 밟았다고 알림
+			player->UpdateIsOnIce(true);
 		}
-
-		// 배열에 추가
-		others.emplace_back(actor);
-	}
-
-	// 판정 처리 안해도 되는지 확인
-	if (others.size() == 0)
-	{
-		return;
-	}
-
-	// 발판 판정
-	for (Actor* const other : others)
-	{
-		// x좌표가 같지 않은 액터 넘기기
-		if (player->GetPosition().x != other->GetPosition().x)
+		else
 		{
-			continue;
-		}
-
-		// 플레이어의 머리 위 액터 넘기기
-		if (player->GetYposition() >= static_cast<float>(other->GetPosition().y + 1))
-		{
-			continue;
-		}
-
-		// 플레이어 아래의 발판 검사
-		// 플레이어의 높이가 1이므로 1을 더한다
-		float playerFoot = player->GetYposition() + 1.0f;
-		float otherTop = static_cast<float>(other->GetPosition().y);
-
-		//const float EPSILON = 0.00005f;
-
-		// 플레이어의 발이 다른 액터의 상단부와 겹치는 여부 판단 
-		if (playerFoot >= otherTop)
-		{
-			// 충돌한(아래에 있는) 액터가 아래 스테이지로 이동하는 통로라면 이전 스테이지 로드
-			if (other->IsTypeOf<DownwardGoal>())
-			{
-				// 다음 레벨로 가도록 레벨 상태 저장
-				state = LevelState::PreviousLevel;
-
-				// 통과한 목적지의 인덱스 찾기
-				int goalIndex = 0;
-				while (downwardGoal[goalIndex] != other)
-				{
-					goalIndex++;
-				}
-
-				// 플레이어 상태 저장
-				SavePlayerData(goalIndex);
-
-				return;
-			}
-
-			// 충돌한 액터가 게임 클리어 목적지 또는 해당 영역이라면
-			else if (other->IsTypeOf<Goal>() || other->IsTypeOf<GoalArea>())
-			{
-				// 게임 클리어!!
-				isGameClear = true;
-				return;
-			}
-
-			// 플레이어 착륙
-			player->UpdateIsLanding(true);
-
-			// 얼음을 밟은 경우
-			if (other->IsTypeOf<Ice>())
-			{
-				// 얼음을 밟았다고 알림
-				player->UpdateIsOnIce(true);
-			}
-			else
-			{
-				// 얼음을 밟지 않았다고 알림
-				player->UpdateIsOnIce(false);
-			}
-
-			// 가시를 밟은 경우 사망
-			// 스테이지 1로 돌아가서 리스폰
-			if (other->IsTypeOf<Spike>())
-			{
-				// 플레이어 사망
-				PlayerDead();
-			}
-
-			// 충돌한 액터가 탄환이라면 사망처리
-			// 스테이지 1로 돌아가서 리스폰
-			else if (other->IsTypeOf<Bullet>())
-			{
-				// 플레이어 사망
-				PlayerDead();
-
-				// 탄환 제거
-				other->Destroy();
-			}
-
-			return;
+			// 얼음을 밟지 않았다고 알림
+			player->UpdateIsOnIce(false);
 		}
 	}
-
-	// 발판 판정이후 리턴되지 않았다면 플레이어 아래에
-	// 발판이 없다는 뜻이므로 isLanding 업데이트
-	player->UpdateIsLanding(false);
+	else
+	{
+		// 바닥 충돌을 하지 않았다면 공중 판정
+		player->UpdateIsLanding(false);
+	}
 }
 
 bool JumpLevel::IsCollisionSkipped(Actor* const other)
@@ -803,11 +716,6 @@ bool JumpLevel::IsCollisionSkipped(Actor* const other)
 	}
 	// 아래 스테이지 생성 위치 타일 액터라면 충돌 X
 	if (other->IsTypeOf<DownwardSpawn>())
-	{
-		return true;
-	}
-	// 맵 경계 타일 액터라면 충돌 X
-	if (other->IsTypeOf<Block>())
 	{
 		return true;
 	}

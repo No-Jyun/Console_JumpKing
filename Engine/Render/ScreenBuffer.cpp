@@ -36,13 +36,6 @@ namespace Wanted
 
 		//ChangeFontSize(8);
 
-		// 버퍼 크기 설정 (콘솔 전체 공간 크기)
-		// Screen Buffer: 실제 텍스트가 저장되는 전체 2D 공간
-		if (!SetConsoleScreenBufferSize(buffer, screenSize))
-		{
-			std::cerr << "Failed to set console buffer size\n";
-			__debugbreak();
-		}
 
 		// 버퍼 생성 후에는 크기 지정 (현재 화면에 보이는 창 크기)
 		// Console Window: 그중 일부를 "카메라처럼" 보여주는 창
@@ -58,6 +51,15 @@ namespace Wanted
 			std::cerr << errorCode << "\n" << "Failed to set console window info\n";
 			__debugbreak();
 		}		
+
+		// 버퍼 크기 설정 (콘솔 전체 공간 크기)
+		// Screen Buffer: 실제 텍스트가 저장되는 전체 2D 공간
+		if (!SetConsoleScreenBufferSize(buffer, screenSize))
+		{
+			std::cerr << "Failed to set console buffer size\n";
+			__debugbreak();
+		}
+
 
 		// 커서 끄기
 		CONSOLE_CURSOR_INFO info;
