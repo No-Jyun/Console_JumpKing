@@ -43,7 +43,8 @@ static const char* stage[] =
 {
 	" ",
 	"Stage1.txt",
-	"Stage2.txt"
+	"Stage2.txt",
+	"Stage3.txt"
 };
 
 JumpLevel::JumpLevel(const int stageIndex)
@@ -75,7 +76,14 @@ void JumpLevel::Tick(float deltaTime)
 	// Todo: Test
 	if (Input::Get().GetKeyDown('Q'))
 	{
-		AddNewActor(new BulletSpawner(Vector2::Zero, this));
+		state = LevelState::NextLevel;
+		return;
+	}
+
+	// Todo: Test
+	if (Input::Get().GetKeyDown('W'))
+	{
+		AddNewActor(new Goal(Vector2(player->position.x + 1, player->position.y)));		
 	}
 
 	// 플레이어 사망시
@@ -267,8 +275,9 @@ void JumpLevel::LoadStage(const char* filename)
 				leftUpPosition = position;
 			}
 
-			// 우측 하단의 꼭짓점은 맵경계 블럭 마지막 생성시 설정
-			rightDownPosition = position;
+			// 우측 하단의 꼭짓점은 맵경계 블럭의 x,y 좌표 최대 값
+			rightDownPosition.x = rightDownPosition.x > position.x ? rightDownPosition.x : position.x;
+			rightDownPosition.y = rightDownPosition.y > position.y ? rightDownPosition.y : position.y;
 
 			break;
 
@@ -285,6 +294,11 @@ void JumpLevel::LoadStage(const char* filename)
 		case '*':
 			// 얼음(미끄러짐) 타일 생성
 			AddNewActor(new Ice(position));
+			break;
+
+		case '/':
+			// 벽 타일 생성
+			AddNewActor(new Wall(position));
 			break;
 
 		case '0':
@@ -390,6 +404,13 @@ void JumpLevel::LoadStage(const char* filename)
 	player = new Player(playerSpawnPosition);
 	AddNewActor(player);
 
+	// 3스테이지라면
+	if (currentStageNum > 2)
+	{
+		// 탄환 생성기 생성
+		AddNewActor(new BulletSpawner(Vector2::Zero, this));
+	}
+
 	// 사용한 버퍼 해제
 	delete[] data;
 
@@ -463,13 +484,13 @@ void JumpLevel::ClearLevel()
 	upwardGoal.clear();
 	downwardGoal.clear();
 	bulletSpawnPositions.clear();
+	leftUpPosition = Vector2::Zero;
+	rightDownPosition = Vector2::Zero;
 	player = nullptr;
 }
 
 void JumpLevel::GameClear()
-{
-	// Todo: 플레이어가 Flag에 닿았는지 확인
-	
+{	
 	// 클리어 화면으로 메뉴 토글
 	Game::Get().ToggleMenu(LevelControl::ClearMenuLevel);
 }
@@ -636,7 +657,7 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 		}
 
 		// 플레이어에게 충돌방향과 액터 알리기
-		player->CrashedWithOther(crashedDir, *actor);
+ 		player->CrashedWithOther(crashedDir, *actor);
 		break;
 	}
 }

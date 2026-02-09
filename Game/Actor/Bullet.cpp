@@ -11,7 +11,7 @@ static const Vector2 directionVector[4] =
 };
 
 Bullet::Bullet(const Vector2& position, const Vector2& playerPosition, float moveSpeed)
-	: super("/", position, Color::Purple),
+	: super("/", position, Color::LightYellow),
 	moveSpeed(moveSpeed), targetPosition(playerPosition),
 	xPosition(static_cast<float>(position.x)), yPosition(static_cast<float>(position.y))
 {

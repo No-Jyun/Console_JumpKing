@@ -7,7 +7,7 @@
 #include "Game/Game.h"
 
 Player::Player(const Vector2& position)
-	: super("b", position, Color::Green), state(PlayerState::IdleR)
+	: super("p", position, Color::Green), state(PlayerState::IdleR)
 {
 	sortingOrder = 10;
 
@@ -21,6 +21,13 @@ Player::Player(const Vector2& position)
 void Player::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
+
+	// Todo: debug
+	if (Input::Get().GetKeyDown('R'))
+	{
+		__debugbreak();
+		return;
+	}
 
 	// 점프 중이 아니고 바닥에 있고 빙판길이 아니라면 입력
 	if (!isJumping && isLanding && !isOnIce)
@@ -37,11 +44,6 @@ void Player::Tick(float deltaTime)
 		}
 
 		// 점프 입력 처리
-		// 첫 점프키 입력시
-		if (Input::Get().GetKeyDown(VK_SPACE))
-		{
-			JumpKeyDown(deltaTime);
-		}
 		// 점프키를 누르고 있는 동안
 		else if (Input::Get().GetKey(VK_SPACE))
 		{
@@ -102,7 +104,8 @@ void Player::UpdateIsLanding(bool isLanding)
 	else if (!isJumping && !isLanding && !isFalling)
 	{
 		isFalling = true;
-		velocityX = isLeft ? -moveSpeed : moveSpeed;
+		isOnIce = false;
+		velocityX = isLeft ? -5.0f : 5.0f;
 		velocityY = 0.0f;
 
 		state = PlayerState::Downward;
@@ -132,6 +135,8 @@ void Player::Fall(float deltaTime)
 	
 	// position 벡터에 갱신
 	position.y = Util::FloatCastInt(y);
+
+	state = PlayerState::Downward;
 }
 
 void Player::MoveLeft(float deltaTime)
@@ -189,7 +194,7 @@ void Player::MoveRight(float deltaTime)
 void Player::MoveOnIce(float deltaTime)
 {
 	float moveDistance = moveSpeed * deltaTime;
-	
+
 	// 방향에 따라 이동
 	x = isLeft ? x - moveDistance : x + moveDistance;
 
@@ -216,16 +221,13 @@ const float Player::CheckXPosition(float nowX)
 	return nowX;
 }
 
-void Player::JumpKeyDown(float deltaTime)
+void Player::JumpKey(float deltaTime)
 {
 	isJumpKeyDown = true;
 
 	// 점프 충전 상태로 변경
 	state = isLeft ? PlayerState::ChargingL : PlayerState::ChargingR;
-}
 
-void Player::JumpKey(float deltaTime)
-{
 	// 점프 충전 시간 경과
 	jumpTimer.Tick(deltaTime);
 
@@ -313,10 +315,15 @@ void Player::Jumping(float deltaTime)
 	}
 	position.y = Util::FloatCastInt(y);
 
-	// 가속도가 양수가 되면(정점을 지나면) 내려가는 상태로 변경
+	// 속도가 양수가 되면(정점을 지나면) 내려가는 상태로 변경
 	if (velocityY >= 0.0f)
 	{
 		state = PlayerState::Downward;
+	}
+	//  속도가 음수면 올라가는 상태
+	else
+	{
+		state = PlayerState::Upward;
 	}
 }
 
@@ -441,24 +448,33 @@ const Vector2 Player::TestIntersect(Actor& const other)
 void Player::CrashedWithOther(const Vector2& crashedDirection, const Actor& other)
 {
 	// x, y 좌표 보정
-	x = static_cast<float>(position.x);
-	y = static_cast<float>(position.y);
+	//x = static_cast<float>(position.x);
+	//y = static_cast<float>(position.y);
 
 	// 위에 충돌한 경우
 	if (crashedDirection == Vector2::Up)
 	{
 		// y 가속도 0으로 바로 추락
 		velocityY = 0.0f;
+
+		// y 좌표 보정
+		y = static_cast<float>(position.y);
 	}
 	else if (crashedDirection == Vector2::Left)
 	{
-		// x 가속도 0으로 멈추고 추락
+		// x 가속도 0
 		velocityX = 0.0f;
+
+		// x 좌표 보정
+		x = static_cast<float>(position.x);
 	}
 	else if (crashedDirection == Vector2::Right)
 	{
-		// x 가속도 0으로 멈추고 추락
+		// x 가속도 0
 		velocityX = 0.0f;
+
+		// x 좌표 보정
+		x = static_cast<float>(position.x);
 	}
 }
 

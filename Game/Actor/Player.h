@@ -64,9 +64,6 @@ public:
 
 private:
 	// 점프 로직
-	// 첫 점프키 입력에 대한 설정
-	void JumpKeyDown(float deltaTime);
-
 	// 점프키 입력 중을 처리하는 함수
 	void JumpKey(float deltaTime);
 

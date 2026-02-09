@@ -1,6 +1,8 @@
 #include "ScreenBuffer.h"
 #include <iostream>	
 #include "Renderer.h"
+#include "Windows.h"
+#include <wchar.h>
 
 namespace Wanted
 {
@@ -121,6 +123,9 @@ namespace Wanted
 		// 폰트 크기 변경
 		fontInfo.dwFontSize.X = static_cast<SHORT>(fontSize);
 		fontInfo.dwFontSize.Y = static_cast<SHORT>(fontSize);
+
+
+		wcscpy_s(fontInfo.FaceName, L"SimSun-ExtB");
 
 		// 적용
 		SetCurrentConsoleFontEx(buffer, FALSE, &fontInfo);

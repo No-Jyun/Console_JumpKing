@@ -85,8 +85,12 @@ void PauseMenuLevel::Tick(float deltaTime)
 
 	if (Input::Get().GetKeyDown(VK_RETURN))
 	{
+		// 인덱스 초기화
+		int selIndex = currentIndex;
+		currentIndex = 0;
+
 		// 메뉴 아이템이 저장한 함수 포인터 호출
-		items[currentIndex]->onSelected();
+		items[selIndex]->onSelected();
 	}
 }
 
