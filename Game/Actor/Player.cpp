@@ -22,12 +22,12 @@ void Player::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	//// Todo: debug
-	//if (Input::Get().GetKeyDown('R'))
-	//{
-	//	__debugbreak(); 
-	//	return;
-	//}
+	// Todo: debug
+	if (Input::Get().GetKeyDown('R'))
+	{
+		__debugbreak(); 
+		return;
+	}
 
 	// 점프 중이 아니고 바닥에 있고 빙판길이 아니라면 입력
 	if (!isJumping && isLanding && !isOnIce)

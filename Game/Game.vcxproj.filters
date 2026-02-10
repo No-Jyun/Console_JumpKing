@@ -156,4 +156,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Assets\Stage\Stage1.txt" />
+    <Text Include="..\Assets\Stage\Stage2.txt" />
+    <Text Include="..\Assets\Stage\Stage3.txt" />
+  </ItemGroup>
 </Project>

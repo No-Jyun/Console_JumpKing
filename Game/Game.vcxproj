@@ -141,6 +141,11 @@
     <ClInclude Include="Util\LevelControl.h" />
     <ClInclude Include="Util\Timer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Assets\Stage\Stage1.txt" />
+    <Text Include="..\Assets\Stage\Stage2.txt" />
+    <Text Include="..\Assets\Stage\Stage3.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

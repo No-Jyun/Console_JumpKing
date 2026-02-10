@@ -121,9 +121,6 @@ private:
 	// 플레이 시간 보여주는 함수
 	void ShowTimer();
 
-	// Draw시 맵 외부에 생기는 액터 제거 함수
-	void ClearLoadedStage();
-
 private:
 	// 현재 로드된 스테이지의 좌측 꼭짓점 위치
 	Vector2 leftUpPosition = Vector2::Zero;
@@ -178,8 +175,5 @@ private:
 
 	// 타이머 문자열.
 	char timeString[128] = {};
-
-	// 스테이지 Clear 확인 함수
-	bool isCleared = false;
 };
 

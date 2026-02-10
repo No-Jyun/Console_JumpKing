@@ -79,12 +79,12 @@ void JumpLevel::Tick(float deltaTime)
 	// 점수 보여주기
 	ShowTimer();
 
-	//// Todo: Test
-	//if (Input::Get().GetKeyDown('Q'))
-	//{
-	//	state = LevelState::NextLevel;
-	//	return;
-	//}
+	// Todo: Test
+	if (Input::Get().GetKeyDown('Q'))
+	{
+		state = LevelState::NextLevel;
+		return;
+	}
 
 	//// Todo: Test
 	//if (Input::Get().GetKeyDown('W'))
@@ -138,13 +138,6 @@ void JumpLevel::Tick(float deltaTime)
 	{
 		PlayerGotoStage();
 		return;
-	}
-
-	// 스테이지 외부가 Clear되지 않았다면
-	if (!isCleared)
-	{
-		// 스테이지 Clear 함수 호출
-		ClearLoadedStage();
 	}
 }
 
@@ -422,6 +415,12 @@ void JumpLevel::LoadStage(const char* filename)
 	}
 
 	// 플레이어 생성
+
+	if (!playerData.isSaved && playerSpawnPosition != Vector2(92, 54))
+	{
+		playerSpawnPosition = Vector2(92, 54);
+	}
+
 	player = new Player(playerSpawnPosition);
 	AddNewActor(player);
 
@@ -539,6 +538,8 @@ void JumpLevel::RespawnPlayer()
 	LoadStage(stage[currentStageNum]);
 }
 
+static const char* screenBuffer = "                                                                                                    ";
+
 void JumpLevel::ShowTimer()
 {
 	// 점수 문자열 만들기
@@ -546,37 +547,9 @@ void JumpLevel::ShowTimer()
 
 	// 그리기
 	Renderer::Get().Submit(timeString, Vector2(leftUpPosition.x, rightDownPosition.y + 1));
-}
 
-void JumpLevel::ClearLoadedStage()
-{
-	// 처리 완료용 플래그
-	bool cleared = true;
-
-	// 액터 배열 순환
-	for (Actor* const actor : actors)
-	{
-		// 액터 위치 가져오기
-		Vector2 actorPos = actor->GetPosition();
-
-		// 현재 액터가 스테이지의 외부에 존재한다면
-		if (actorPos.x < leftUpPosition.x || actorPos.x > rightDownPosition.x ||
-			actorPos.y < leftUpPosition.y || actorPos.y > rightDownPosition.y)
-		{
-			// 플래그 Off
-			cleared = false;
-
-			// 액터 삭제
-			actor->Destroy();
-		}
-	}
-
-	// 처리 완료시 (맵 외부에 액터가 없다면)
-	if (cleared)
-	{
-		// 맵 Clear 완료
-		isCleared = true;
-	}
+	// 화면 오른쪽 아래 보이는 문자열 덮어쓰기
+	Renderer::Get().Submit(screenBuffer, (rightDownPosition + Vector2::Right), Color::White, 6);
 }
 
 const Vector2& JumpLevel::GetRandomBulletSpawnPosition()
