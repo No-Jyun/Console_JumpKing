@@ -31,6 +31,7 @@ class Player : public Actor
 public:
 	Player(const Vector2& position);
 
+	// 이벤트 함수 오버라이드
 	virtual void Tick(float deltaTime) override;
 
 	// 플레이어 기준 벡터 방향으로 충돌하고 충돌 조치하는 함수
@@ -116,12 +117,10 @@ private:
 
 	// Todo: 이동속도 조정
 	float moveSpeed = 10.0f;
-	//float maxSpeed = 5.0f;
 
 	// 점프 관련 변수
 	// 중력 가속도 설정
 	const float gravity = 15.0f;
-	//const float maxFallSpeed = 10.0f;
 
 	// 현재 속도
 	float velocityX = 0.0f;

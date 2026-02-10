@@ -14,6 +14,7 @@ void BulletSpawner::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
+	// 타이머 경과
 	spawnTimer.Tick(deltaTime);
 
 	// 타이머 끝난 경우

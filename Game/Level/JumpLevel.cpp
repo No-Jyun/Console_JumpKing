@@ -64,6 +64,9 @@ void JumpLevel::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
+	// 타이머 경과
+	timer.Tick(deltaTime);
+
 	// ESC키 처리.
 	// 플레이어 사망시에도 입력받기 위해서 레벨에서 처리
 	if (Input::Get().GetKeyDown(VK_ESCAPE))
@@ -73,25 +76,28 @@ void JumpLevel::Tick(float deltaTime)
 		return;
 	}
 
-	// Todo: Test
-	if (Input::Get().GetKeyDown('Q'))
-	{
-		state = LevelState::NextLevel;
-		return;
-	}
+	// 점수 보여주기
+	ShowTimer();
 
-	// Todo: Test
-	if (Input::Get().GetKeyDown('W'))
-	{
-		state = LevelState::PreviousLevel;
-		return;
-	}
+	//// Todo: Test
+	//if (Input::Get().GetKeyDown('Q'))
+	//{
+	//	state = LevelState::NextLevel;
+	//	return;
+	//}
 
-	// Todo: Test
-	if (Input::Get().GetKeyDown('E'))
-	{
-		AddNewActor(new Goal(Vector2(player->position.x + 1, player->position.y)));		
-	}
+	//// Todo: Test
+	//if (Input::Get().GetKeyDown('W'))
+	//{
+	//	state = LevelState::PreviousLevel;
+	//	return;
+	//}
+
+	//// Todo: Test
+	//if (Input::Get().GetKeyDown('E'))
+	//{
+	//	AddNewActor(new Goal(Vector2(player->position.x + 5, player->position.y)));		
+	//}
 
 	// 플레이어 사망시
 	if (isPlayerDead)
@@ -116,6 +122,9 @@ void JumpLevel::Tick(float deltaTime)
 
 	// 충돌 판정 처리
 	ProcessCollisionPlayerAndOther();
+
+	// 탄환 충돌 판정 처리
+	ProcessCollisionPlayerAndBullet();
 
 	// 게임 클리어시
 	if (isGameClear)
@@ -522,6 +531,15 @@ void JumpLevel::RespawnPlayer()
 	LoadStage(stage[currentStageNum]);
 }
 
+void JumpLevel::ShowTimer()
+{
+	// 점수 문자열 만들기
+	sprintf_s(timeString, 128, "Time: %d", static_cast<int>(timer.GetElapsedTime()));
+
+	// 그리기
+	Renderer::Get().Submit(timeString, Vector2(leftUpPosition.x, rightDownPosition.y + 1));
+}
+
 const Vector2& JumpLevel::GetRandomBulletSpawnPosition()
 {
 	// 배열 길이 확인
@@ -612,7 +630,7 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 
 		// 충돌하지 않은 액터 넘기기
 		if (crashedDir == Vector2::Zero)
-		{
+		{			
 			continue;
 		}
 
@@ -635,25 +653,31 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 			return;
 		}
 
+		// 충돌한(아래에 있는) 액터가 아래 스테이지로 이동하는 통로라면 이전 스테이지 로드
+		else if (actor->IsTypeOf<DownwardGoal>())
+		{
+			// 다음 레벨로 가도록 레벨 상태 저장
+			state = LevelState::PreviousLevel;
+
+			// 통과한 목적지의 인덱스 찾기
+			int goalIndex = 0;
+			while (downwardGoal[goalIndex] != actor)
+			{
+				goalIndex++;
+			}
+
+			// 플레이어 상태 저장
+			SavePlayerData(goalIndex);
+
+			return;
+		}
+
 		// 충돌한 액터가 가시라면 사망처리
 		// 스테이지 1로 돌아가서 리스폰
 		else if (actor->IsTypeOf<Spike>())
 		{
 			// 플레이어 사망
 			PlayerDead();
-
-			return;
-		}
-
-		// 충돌한 액터가 탄환이라면 사망처리
-		// 스테이지 1로 돌아가서 리스폰
-		else if (actor->IsTypeOf<Bullet>())
-		{
-			// 플레이어 사망
-			PlayerDead();
-
-			// 탄환 제거
-			actor->Destroy();
 
 			return;
 		}
@@ -704,6 +728,55 @@ void JumpLevel::ProcessCollisionPlayerAndOther()
 	{
 		// 바닥 충돌을 하지 않았다면 공중 판정
 		player->UpdateIsLanding(false);
+	}
+}
+
+void JumpLevel::ProcessCollisionPlayerAndBullet()
+{
+	// 플레이어가 없다면 리턴
+	if (!player)
+	{
+		return;
+	}
+
+	// 액터 필터링을 위한 변수
+	std::vector<Actor*> others;
+
+	// 액터 필터링
+	for (Actor* const actor : actors)
+	{
+		// 현재 액터가 충돌하지 않을 액터 또는 플레이어라면 스킵
+		if (!actor->IsTypeOf<Bullet>())
+		{
+			continue;
+		}
+
+		// 배열에 추가
+		others.emplace_back(actor);
+	}
+
+	// 판정 처리 안해도 되는지 확인
+	if (others.size() == 0)
+	{
+		return;
+	}
+
+	// 충돌 판정
+	for (Actor* const actor : others)
+	{
+		// 화면에 그려진 플레이어와 탄환의 위치가 같을때만 충돌 판정
+		if (player->GetPosition() == actor->GetPosition())
+		{
+			// 충돌한 액터가 탄환이라면 사망처리
+			// 스테이지 1로 돌아가서 리스폰
+			// 플레이어 사망
+			PlayerDead();
+
+			// 탄환 제거
+			actor->Destroy();
+
+			return;
+		}
 	}
 }
 

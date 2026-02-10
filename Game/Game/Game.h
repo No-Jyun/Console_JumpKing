@@ -30,6 +30,4 @@ private:
 	// 싱글톤 구현을 위한 정적 변수
 	static Game* instance;
 
-	// jumpLevel의 스테이지를 관리할 변수
-	int currentStage = 1;
 };

@@ -42,6 +42,7 @@ class PlayerDeadEffect : public Actor
 public:
 	PlayerDeadEffect(const Vector2& position);
 
+	// 이벤트 함수 오버라이드
 	virtual void Tick(float deltaTime) override;
 
 private:

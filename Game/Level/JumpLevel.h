@@ -106,6 +106,9 @@ private:
 	// 충돌 판정 처리 함수
 	void ProcessCollisionPlayerAndOther();
 
+	// 탄환 충돌 판정 처리 함수
+	void ProcessCollisionPlayerAndBullet();
+
 	// 충돌을 무시할 액터인지 판단하는 함수
 	bool IsCollisionSkipped(Actor* const other);
 
@@ -114,6 +117,9 @@ private:
 
 	// 플레이어 리스폰 함수
 	void RespawnPlayer();
+
+	// 플레이 시간 보여주는 함수
+	void ShowTimer();
 
 private:
 	// 현재 로드된 스테이지의 좌측 꼭짓점 위치
@@ -163,5 +169,12 @@ private:
 
 	// 콘솔 중앙에 오도록 그릴 위치
 	Vector2 drawPosition;
+
+	// 게임 경과 시간
+	Timer timer;
+
+	// 타이머 문자열.
+	char timeString[128] = {};
+
 };
 

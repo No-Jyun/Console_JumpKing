@@ -18,6 +18,7 @@ Bullet::Bullet(const Vector2& position, const Vector2& playerPosition, float mov
 	// 벽을 관통하여 추적하므로 그리기 우선순위 높임
 	sortingOrder = 5;
 
+	// 탄환이 날아갈 방향과 속도 설정
 	SetBulletDirectionAndSpeed();
 }
 
@@ -74,39 +75,8 @@ void Bullet::SetBulletDirectionAndSpeed()
 	// 방향 벡터를 정규화하여 y좌표의 방향 결정
 	yDirection = static_cast<float>(targetDirection.y) / length;
 
-	//// 방향에 따라 탄환 이미지를 생성하기 위해 내적 계산
-	//// 위, 아래 방향 벡터
-	//Vector2 downD = Vector2::Down;
-
-	//// 좌상, 우하 방향 벡터 (콘솔 기준)
-	//Vector2 leftD = Vector2(-1, 1);
-
-	//// 좌하, 우상 방향 벡터 (콘솔 기준)
-	//Vector2 rightD = Vector2(1, 1);
-
-	//// 탄환의 방향과 내적 계산
-	//float dotUp = downD.Dot(xDirection, yDirection);
-	//float dotLeft = leftD.Dot(xDirection, yDirection);
-	//float dotRight = rightD.Dot(xDirection, yDirection);
-
-	//// 위, 아래 방향과 가장 가까운 경우
-	//if (dotUp >= dotLeft && dotUp >= dotRight)
-	//{
-	//	ChangeImage("|");
-	//}
-	//// 좌상, 우하 방향과 가장 가까운 경우
-	//else if (dotLeft >= dotUp && dotLeft >= dotRight)
-	//{
-	//	ChangeImage("/");
-	//}
-	//// 좌하, 우상 방향과 가장 가까운 경우
-	//else
-	//{
-	//	ChangeImage("\\");
-	//}
-
 	// y방향 좌표의 절대값이 특정 값 이상이면 수직 방향으로 변경
-	if (fabs(yDirection) > 0.7f)
+	if (fabs(yDirection) > 0.8f)
 	{
 		ChangeImage("|");
 	}

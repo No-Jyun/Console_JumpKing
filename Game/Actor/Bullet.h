@@ -14,6 +14,7 @@ public:
 	Bullet(const Vector2& position, const Vector2& playerPosition, float moveSpeed = 5.0f);
 
 private:
+	// 이벤트 함수 오버라이드
 	virtual void Tick(float deltaTime) override;
 
 	// 탄환이 날아갈 위치 및 속도 설정

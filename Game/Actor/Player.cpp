@@ -22,12 +22,12 @@ void Player::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	// Todo: debug
-	if (Input::Get().GetKeyDown('R'))
-	{
-		__debugbreak();
-		return;
-	}
+	//// Todo: debug
+	//if (Input::Get().GetKeyDown('R'))
+	//{
+	//	__debugbreak(); 
+	//	return;
+	//}
 
 	// 점프 중이 아니고 바닥에 있고 빙판길이 아니라면 입력
 	if (!isJumping && isLanding && !isOnIce)
@@ -56,18 +56,20 @@ void Player::Tick(float deltaTime)
 			Jumping(deltaTime);
 		}
 	}
+
 	// 점프 중이 아닌데 바닥에 있지 않다면 공중에 있다는 뜻이므로 추락 처리
 	else if (!isJumping && !isLanding)
 	{
 		// 추락 처리
 		Fall(deltaTime);
-		//Jumping(deltaTime);
 	}
+
 	// 점프 중이라면 해당 방향으로 힘을 가지고 이동 중
 	else if(isJumping && !isLanding)
 	{
 		Jumping(deltaTime);
 	}
+
 	// 빙판길 위라면 해당 방향으로 자동 이동
 	else if (isOnIce)
 	{
@@ -235,6 +237,7 @@ const float Player::CheckXPosition(float nowX)
 	{
 		nowX = rightDown.x - 1;
 	}
+
 	return nowX;
 }
 
@@ -303,10 +306,8 @@ void Player::Jump()
 	// 방향에 따라 가속도 설정
 	velocityX = isLeft ? -velocityX : velocityX;
 
-	// 점프 중
-	isJumping = true;
-
 	// 점프 상태로 변경
+	isJumping = true;
 	state = PlayerState::Upward;
 }
 
@@ -453,7 +454,7 @@ const Vector2 Player::TestIntersect(Actor& const other)
 	{
 		// x축으로 더 적게 겹침 -> 좌/우 충돌		
 		// x의 속도가 양수라면 오른쪽 충돌
-		if (velocityX > 0)
+		if (velocityX > 0 || !isLeft)
 		{
 			return Vector2::Right;
 		}

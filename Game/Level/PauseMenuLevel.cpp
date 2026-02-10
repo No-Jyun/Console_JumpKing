@@ -68,7 +68,7 @@ void PauseMenuLevel::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 	
-	// 입력 처리 (방향키 위/아래키, 엔터키, ESC)
+	// 입력 처리 (방향키 위/아래키, 엔터키)
 	// 배열 길이
 	static int length = static_cast<int>(items.size());
 	if (Input::Get().GetKeyDown(VK_UP))
@@ -154,6 +154,7 @@ void PauseMenuLevel::DrawLogo()
 
 void PauseMenuLevel::DrawItem()
 {
+	// 메뉴 항목 배열 순회
 	for (int i = 0; i < static_cast<int>(items.size()); i++)
 	{
 		// 메뉴 아이템을 그리기로 정한 위치에서

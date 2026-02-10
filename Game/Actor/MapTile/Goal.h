@@ -14,8 +14,8 @@ class Goal : public Actor
 public:
 	Goal(const Vector2& position);
 
+	// 이벤트 함수 오버라이드
 	virtual void Tick(float deltaTime) override;
-
 	virtual void Draw() override;
 
 private:

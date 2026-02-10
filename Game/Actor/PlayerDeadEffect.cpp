@@ -5,10 +5,10 @@
 // 효과 재생에 사용할 문자열 시퀀스 (일종의 애니메이션 프레임).
 static const PlayerDeadEffect::EffectFrame sequence[] =
 {
-	PlayerDeadEffect::EffectFrame(" @,@  ", 0.08f, Color::LightRed),
-	PlayerDeadEffect::EffectFrame(" x,x  ", 0.08f, Color::Red),
-	PlayerDeadEffect::EffectFrame(" @,@  ", 0.08f, Color::LightRed),
-	PlayerDeadEffect::EffectFrame(" x,x  ", 0.08f, Color::Red),
+	PlayerDeadEffect::EffectFrame(" @,@  ", 0.1f, Color::LightRed),
+	PlayerDeadEffect::EffectFrame(" x,x  ", 0.1f, Color::Red),
+	PlayerDeadEffect::EffectFrame(" @,@  ", 0.1f, Color::LightRed),
+	PlayerDeadEffect::EffectFrame(" x,x  ", 0.1f, Color::Red),
 	PlayerDeadEffect::EffectFrame("!Dead!", 0.5f, Color::Purple)
 };
 
