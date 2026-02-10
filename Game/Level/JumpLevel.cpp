@@ -137,6 +137,14 @@ void JumpLevel::Tick(float deltaTime)
 	if (state != LevelState::None)
 	{
 		PlayerGotoStage();
+		return;
+	}
+
+	// 스테이지 외부가 Clear되지 않았다면
+	if (!isCleared)
+	{
+		// 스테이지 Clear 함수 호출
+		ClearLoadedStage();
 	}
 }
 
@@ -538,6 +546,37 @@ void JumpLevel::ShowTimer()
 
 	// 그리기
 	Renderer::Get().Submit(timeString, Vector2(leftUpPosition.x, rightDownPosition.y + 1));
+}
+
+void JumpLevel::ClearLoadedStage()
+{
+	// 처리 완료용 플래그
+	bool cleared = true;
+
+	// 액터 배열 순환
+	for (Actor* const actor : actors)
+	{
+		// 액터 위치 가져오기
+		Vector2 actorPos = actor->GetPosition();
+
+		// 현재 액터가 스테이지의 외부에 존재한다면
+		if (actorPos.x < leftUpPosition.x || actorPos.x > rightDownPosition.x ||
+			actorPos.y < leftUpPosition.y || actorPos.y > rightDownPosition.y)
+		{
+			// 플래그 Off
+			cleared = false;
+
+			// 액터 삭제
+			actor->Destroy();
+		}
+	}
+
+	// 처리 완료시 (맵 외부에 액터가 없다면)
+	if (cleared)
+	{
+		// 맵 Clear 완료
+		isCleared = true;
+	}
 }
 
 const Vector2& JumpLevel::GetRandomBulletSpawnPosition()
