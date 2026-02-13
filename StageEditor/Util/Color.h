@@ -1,0 +1,24 @@
+#pragma once
+
+#include <Windows.h>
+
+// 콘솔에 텍스트 색상 등을 지정할 때 사용할
+// 색상 열거형
+enum class Color : unsigned short
+{
+	Black = 0,
+	// 텍스트 색상임. 배경색상 또한 내부에 존재하므로 필요하면 사용
+	Red = FOREGROUND_RED,
+	LightRed = FOREGROUND_RED | FOREGROUND_INTENSITY,
+	Yellow = FOREGROUND_RED | FOREGROUND_GREEN,
+	LightYellow = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+	Green = FOREGROUND_GREEN,
+	LightGreen = FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+	Sky = FOREGROUND_BLUE | FOREGROUND_GREEN,
+	LightSky = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+	Blue = FOREGROUND_BLUE,
+	LightBlue = FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+	Purple = FOREGROUND_RED | FOREGROUND_BLUE,
+	LightPurple = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+	White = Red | Green | Blue,
+};
