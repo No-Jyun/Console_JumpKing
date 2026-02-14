@@ -49,7 +49,7 @@ public:
 	void Draw();
 
 	// 버퍼에 그리는 함수
-	void BufferDraw(CHAR_INFO* charInfo);
+	void BufferDraw(CHAR_INFO* charInfo, HANDLE buffer);
 
 	// 그리는데 필요한 데이터를 제출(적재)하는 함수
 	void Submit(
@@ -70,7 +70,10 @@ private:
 	void Clear();
 
 	// 버퍼를 지우는 함수
-	void BufferClear();
+	void BufferClear(HANDLE buffer);
+
+	// 더블 버퍼링을 활용해 활성화 버퍼를 교환하는 함수
+	void Present();
 
 private:
 	// 화면 크기
@@ -79,8 +82,11 @@ private:
 	//관리할 프레임 객체
 	Frame* frame = nullptr;
 
-	// 버퍼 배열
-	HANDLE buffer;
+	// 이중 버퍼 배열
+	HANDLE screenBuffers[2];
+
+	// 현재 활성화된 버퍼 인덱스 (그리는 대상 / Back Buffer)
+	int currentBufferIndex = 0;
 
 	// 렌더 큐 (씬의 모든 그리기 명령을 모아두는 배열)
 	std::vector<RenderCommand> renderQueue;

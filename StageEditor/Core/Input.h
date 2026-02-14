@@ -4,6 +4,8 @@
 
 class Input
 {
+	friend class SimpleEngine;
+
 	// ตฅภฬลอ.
 	// Down/Up/Key
 	struct KeyState

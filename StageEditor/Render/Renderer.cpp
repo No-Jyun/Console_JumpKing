@@ -66,20 +66,26 @@ Renderer::Renderer(const Vector2& screenSize)
 
 	// 버퍼 세팅
 	SetBuffer();
+
+	BufferClear(screenBuffers[0]);
+	BufferClear(screenBuffers[1]);
+	
+	// 활성화 버퍼 설정
+	Present();
 }
 
 Renderer::~Renderer()
 {
 	SafeDelete(frame);
 
-	CloseHandle(buffer);
+	CloseHandle(screenBuffers[0]);
+	CloseHandle(screenBuffers[1]);
 }
 
 void Renderer::Draw()
 {
 	// 화면 지우기
 	Clear();
-	BufferClear();
 
 	// 전제조건: 레벨의 모든 액터가 렌더러에 Submit을 완료
 	// 렌더 큐 순회하면서 프레임(Frame) 채우기
@@ -145,13 +151,15 @@ void Renderer::Draw()
 	}
 
 	// 그리기(ScreenBuffer)
-	BufferDraw(frame->charInfoArray);
+	BufferDraw(frame->charInfoArray, screenBuffers[currentBufferIndex]);
+
+	Present();
 
 	// 렌더 큐 비우기
 	renderQueue.clear();
 }
 
-void Renderer::BufferDraw(CHAR_INFO* charInfo)
+void Renderer::BufferDraw(CHAR_INFO* charInfo, HANDLE buffer)
 {
 	SMALL_RECT writeRegion = {};
 	writeRegion.Left = 0;
@@ -192,10 +200,10 @@ void Renderer::Clear()
 	frame->Clear(screenSize);
 
 	// 2. 콘솔 버퍼 지우기
-	BufferClear();
+	BufferClear(screenBuffers[currentBufferIndex]);
 }
 
-void Renderer::BufferClear()
+void Renderer::BufferClear(HANDLE buffer)
 {
 	// 실제로 화면을 지우고 난 뒤에 
 	// 몇 글자를 썼는지 반환 받는데 사용
@@ -212,6 +220,16 @@ void Renderer::BufferClear()
 	);
 }
 
+void Renderer::Present()
+{
+	// 버퍼 교환
+	SetConsoleActiveScreenBuffer(screenBuffers[currentBufferIndex]);
+
+	// 인덱스 교체
+	currentBufferIndex = 1 - currentBufferIndex;
+}
+
+
 void Renderer::Submit(const char* text, const Vector2& position, Color color, int sortingOrder)
 {
 	// 렌더 데이터 생성 후 큐에 추가
@@ -226,34 +244,39 @@ void Renderer::Submit(const char* text, const Vector2& position, Color color, in
 
 void Renderer::SetBuffer()
 {
-	buffer = CreateConsoleScreenBuffer(
-		GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		nullptr,
-		CONSOLE_TEXTMODE_BUFFER,
-		nullptr
-	);
-
-	// 버퍼 생성 후에는 크기 지정 (현재 화면에 보이는 창 크기)
-	// Console Window: 그중 일부를 "카메라처럼" 보여주는 창
-	SMALL_RECT rect;
-	rect.Left = 0;
-	rect.Top = 0;
-	rect.Right = static_cast<short>(screenSize.x - 1);
-	rect.Bottom = static_cast<short>(screenSize.y - 1);
-
-	if (!SetConsoleWindowInfo(buffer, TRUE, &rect))
+	for (auto& buffer : screenBuffers)
 	{
-		DWORD errorCode = GetLastError();
-		std::cerr << errorCode << "\n" << "Failed to set console window info\n";
-		__debugbreak();
-	}
+		buffer = CreateConsoleScreenBuffer(
+			GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ | FILE_SHARE_WRITE,
+			nullptr,
+			CONSOLE_TEXTMODE_BUFFER,
+			nullptr
+		);
 
-	if (!SetConsoleScreenBufferSize(buffer, screenSize))
-	{
-		std::cerr << "Failed to set console buffer size\n";
-		__debugbreak();
-	}
+		// 버퍼 생성 후에는 크기 지정 (현재 화면에 보이는 창 크기)
+		// Console Window: 그중 일부를 "카메라처럼" 보여주는 창
+		SMALL_RECT rect;
+		rect.Left = 0;
+		rect.Top = 0;
+		rect.Right = static_cast<short>(screenSize.x - 1);
+		rect.Bottom = static_cast<short>(screenSize.y - 1);
 
-	SetConsoleActiveScreenBuffer(buffer);
+		if (!SetConsoleWindowInfo(buffer, TRUE, &rect))
+		{
+			DWORD errorCode = GetLastError();
+			std::cerr << errorCode << "\n" << "Failed to set console window info\n";
+			__debugbreak();
+		}
+
+		if (!SetConsoleScreenBufferSize(buffer, screenSize))
+		{
+			std::cerr << "Failed to set console buffer size\n";
+			__debugbreak();
+		}
+
+		SetConsoleActiveScreenBuffer(buffer);
+
+		Util::TurnOffCursor(buffer);
+	}	
 }

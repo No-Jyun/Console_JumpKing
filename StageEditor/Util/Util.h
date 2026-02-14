@@ -28,26 +28,18 @@ namespace Util
 	}
 
 	// 커서 끄기.
-	inline void TurnOffCursor()
+	inline void TurnOffCursor(HANDLE handle)
 	{
 		// 커서 끄기.
 		CONSOLE_CURSOR_INFO info = {};
-		GetConsoleCursorInfo(
-			GetStdHandle(STD_OUTPUT_HANDLE),
-			&info
-		);
-
 		info.bVisible = false;
-		SetConsoleCursorInfo(
-			GetStdHandle(STD_OUTPUT_HANDLE),
-			&info
-		);
+		SetConsoleCursorInfo(handle, &info);
 	}
 
 	// 커서 켜기.
 	inline void TurnOnCursor()
 	{
-		// 커서 끄기.
+		// 커서 켜기.
 		CONSOLE_CURSOR_INFO info = {};
 		GetConsoleCursorInfo(
 			GetStdHandle(STD_OUTPUT_HANDLE),
