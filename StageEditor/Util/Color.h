@@ -21,4 +21,5 @@ enum class Color : unsigned short
 	Purple = FOREGROUND_RED | FOREGROUND_BLUE,
 	LightPurple = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
 	White = Red | Green | Blue,
+	BackGoundWhite = BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED,
 };

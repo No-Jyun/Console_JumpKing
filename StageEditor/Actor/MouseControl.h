@@ -40,6 +40,11 @@ public:
 	inline int GetWidth() const { return width; }
 
 private:
+	void SelectPositionClear();
+
+	void DragProcess();
+
+private:
 	// 이미 BeginPlay 이벤트를 받았는지 여부
 	bool hasBeganPlay = false;
 
@@ -65,4 +70,11 @@ private:
 
 	// 위치
 	Vector2 position;
+
+	Vector2 firstSelectedPosition;
+	Vector2 lastSelectedPosition;
+	
+	bool isFirstClicked = true;
+
+	std::vector<Vector2> selectedPosition;
 };

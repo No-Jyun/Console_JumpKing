@@ -13,7 +13,10 @@ const char* instructionString[] =
 	"d : 아래 스테이지 통로",
 	"f : 위 스테이지에서 아래 스테이지로 내려올대 생성되는 위치",
 	"G : 게임 클리어 목적지",
-	"g : 게임 클리어 목적지의 트리거 박스"
+	"g : 게임 클리어 목적지의 트리거 박스",
+	"  ",
+	"R 키를 누르시면 선택한 곳이 초기화 됩니다."
+	"Q 키를 누르시면 맵 편집이 종료됩니다."
 };
 
 DrawLevel::DrawLevel(const Vector2& screenSize)
