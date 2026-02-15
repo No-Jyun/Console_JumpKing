@@ -44,6 +44,10 @@ private:
 
 	void DragProcess();
 
+	void KeyProcess(char mapChar);
+
+	void SaveStageFile();
+
 private:
 	// 이미 BeginPlay 이벤트를 받았는지 여부
 	bool hasBeganPlay = false;

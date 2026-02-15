@@ -19,6 +19,8 @@ public:
 	void Tick(float deltaTime);
 	void Draw();
 
+	void SaveStageFile();
+
 private:
 	void SetLevelBase();
 

@@ -6,6 +6,10 @@
 
 int main()
 {
+	std::cout << "제작할 스테이지의 숫자를 입력하세요 : ";
+	int stageNum;
+	std::cin >> stageNum;
+
 	std::cout << "제작할 스테이지의 너비와 높이를 입력하세요\n";
 
 	int width, height;
@@ -23,8 +27,9 @@ int main()
 	//Renderer::Get().Submit("Hello", Vector2(10, 10));
 	//Renderer::Get().Draw();
 	////////////////////////////////////////////////////////////////// 여기부터
+	system("cls");
 
-	SimpleEngine* engine = new SimpleEngine(Vector2(width, height));
+	SimpleEngine* engine = new SimpleEngine(Vector2(width, height), stageNum);
 	engine->Run();
 
 

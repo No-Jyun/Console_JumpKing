@@ -24,7 +24,7 @@ class SimpleEngine
 	};
 
 public:
-	SimpleEngine(const Vector2& screenSize);
+	SimpleEngine(const Vector2& screenSize, int stageNum);
 	~SimpleEngine();
 
 	// 엔진 루프(게임 루프)
@@ -44,6 +44,8 @@ public:
 
 	// 화면 높이 반환 함수
 	inline int GetHeight() const { return setting.height; }
+
+	inline int GetStageNum() const { return stageNum; }
 
 private:
 
@@ -70,6 +72,8 @@ private:
 
 	// 렌더러 객체
 	Renderer* renderer = nullptr;
+
+	int stageNum;
 
 	// 메인 레벨
 	class DrawLevel* mainLevel = nullptr;

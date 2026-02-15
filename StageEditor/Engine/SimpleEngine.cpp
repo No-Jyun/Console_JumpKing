@@ -11,7 +11,8 @@
 // 전역 변수 초기화
 SimpleEngine* SimpleEngine::instance = nullptr;
 
-SimpleEngine::SimpleEngine(const Vector2& screenSize)
+SimpleEngine::SimpleEngine(const Vector2& screenSize, int stageNum)
+	: stageNum(stageNum)
 {
 	// 전역 변수 값 초기화
 	instance = this;

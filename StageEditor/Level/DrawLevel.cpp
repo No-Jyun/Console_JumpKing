@@ -1,21 +1,23 @@
 #include "DrawLevel.h"
 #include "../Actor/MouseControl.h"
+#include "../Engine/SimpleEngine.h"
 
 const char* instructionString[] =
 {
-	". : 바닥",
-	", : 풀",
-	"/ : 벽",
-	"* : 얼음",
+	"A -> . : 바닥",
+	"B -> , : 풀",
+	"C -> / : 벽",
+	"8 -> * : 얼음",
 	"0,1,2,3 : 가시(북,동,남,서)",
 	"u : 위 스테이지 통로",
 	"i : 아래 스테이지에서 위 스테이지로 올라올때 생성될 위치",
 	"d : 아래 스테이지 통로",
 	"f : 위 스테이지에서 아래 스테이지로 내려올대 생성되는 위치",
 	"G : 게임 클리어 목적지",
-	"g : 게임 클리어 목적지의 트리거 박스",
+	"H -> g : 게임 클리어 목적지의 트리거 박스",
+	"O -> 공백(빈칸)",
 	"  ",
-	"R 키를 누르시면 선택한 곳이 초기화 됩니다."
+	"R 키를 누르시면 선택한 곳이 초기화 됩니다.",
 	"Q 키를 누르시면 맵 편집이 종료됩니다."
 };
 
@@ -67,6 +69,41 @@ void DrawLevel::Draw()
 
 	DrawInstruction();
 	DrawStageLevel();
+}
+
+void DrawLevel::SaveStageFile()
+{
+	int stageNum = SimpleEngine::Get().GetStageNum();
+
+	char path[2048] = { };
+	sprintf_s(path, 2048, "../Assets/DrawStage/Stage%d.txt", stageNum);
+
+	// 파일 열기
+	FILE* file = nullptr;
+	fopen_s(&file, path, "wt+");
+
+	// 예외 처리
+	if (!file)
+	{
+		// 오류 메시지 출력.
+		MessageBoxA(
+			nullptr,
+			"JumpLevel::LoadStage() - Failed to load stage",
+			"Error",
+			MB_OK
+		);
+
+		__debugbreak();
+	}
+
+	// vector 내용을 파일에 쓰기
+	for (const std::string& line : stage)
+	{
+		fprintf_s(file, "%s\n", line.c_str());
+	}
+
+	// 파일 닫기
+	fclose(file);
 }
 
 void DrawLevel::SetLevelBase()

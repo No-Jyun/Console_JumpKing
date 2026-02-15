@@ -31,6 +31,7 @@ void MouseControl::Tick(float deltaTime)
 {
 	if (Input::Get().GetKeyDown('Q'))
 	{
+		SaveStageFile();
 		QuitGame();
 	}
 
@@ -69,31 +70,85 @@ void MouseControl::Tick(float deltaTime)
 	{
 		SelectPositionClear();
 	}
-	/*if (Input::Get().GetKeyDown('R'))
-	{
 
+	if (isFirstClicked == true && selectedPosition.size() != 0)
+	{
+		if (Input::Get().GetKeyDown('A'))
+		{
+			KeyProcess('.');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('B'))
+		{
+			KeyProcess(',');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('C'))
+		{
+			KeyProcess('/');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('8'))
+		{
+			KeyProcess('*');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('0'))
+		{
+			KeyProcess('0');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('1'))
+		{
+			KeyProcess('1');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('2'))
+		{
+			KeyProcess('2');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('3'))
+		{
+			KeyProcess('3');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('U'))
+		{
+			KeyProcess('u');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('I'))
+		{
+			KeyProcess('i');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('D'))
+		{
+			KeyProcess('d');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('F'))
+		{
+			KeyProcess('f');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('G'))
+		{
+			KeyProcess('G');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('H'))
+		{
+			KeyProcess('g');
+			SelectPositionClear();
+		}
+		if (Input::Get().GetKeyDown('O'))
+		{
+			KeyProcess(' ');
+			SelectPositionClear();
+		}
 	}
-	if (Input::Get().GetKeyDown('R'))
-	{
-
-	}
-	if (Input::Get().GetKeyDown('R'))
-	{
-
-	}
-	if (Input::Get().GetKeyDown('R'))
-	{
-
-	}
-	if (Input::Get().GetKeyDown('R'))
-	{
-
-	}
-	if (Input::Get().GetKeyDown('R'))
-	{
-
-	}*/
-
 }
 
 void MouseControl::Draw()
@@ -193,4 +248,17 @@ void MouseControl::DragProcess()
 		}
 		iIndex = 0;
 	}
+}
+
+void MouseControl::KeyProcess(char mapChar)
+{
+	for (Vector2 selPos : selectedPosition)
+	{
+		drawLevel->stage[selPos.y][selPos.x] = mapChar;
+	}
+}
+
+void MouseControl::SaveStageFile()
+{
+	drawLevel->SaveStageFile();
 }
